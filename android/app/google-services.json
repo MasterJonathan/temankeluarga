@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "389031362755",
+    "project_id": "silver-guide",
+    "storage_bucket": "silver-guide.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:389031362755:android:f71fc39eae624325c52276",
+        "android_client_info": {
+          "package_name": "com.example.silver_guide"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6SjEphiXVyFXXGpVc4nOmgBddA7Incd4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
