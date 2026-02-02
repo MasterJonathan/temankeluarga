@@ -6,6 +6,8 @@ import 'package:silver_guide/features/activities/presentation/activities_page.da
 import 'package:silver_guide/features/family_chat/presentation/family_chat_page.dart';
 import 'package:silver_guide/features/gallery/presentation/memories_page.dart';
 import 'package:silver_guide/features/medication/presentation/health_page.dart';
+import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
+import 'package:silver_guide/features/profile/presentation/settings_page.dart';
 
 // State Provider untuk mengontrol Tab yang aktif
 final navIndexProvider = StateProvider<int>((ref) => 0);
@@ -16,6 +18,8 @@ class MainNavigationScaffold extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = ref.watch(navIndexProvider);
+
+    final asyncUser = ref.watch(profileControllerProvider);
 
     // List Halaman (Placeholder untuk saat ini)
     final List<Widget> pages = [
@@ -37,7 +41,28 @@ class MainNavigationScaffold extends ConsumerWidget {
       // 1. Header dengan SOS Button
       appBar: AppBar(
         title: Text(titles[currentIndex]),
-        actions: [_buildSOSButton(context), const SizedBox(width: 16)],
+        actions: [
+          _buildSOSButton(context), 
+          const SizedBox(width: 12),
+          GestureDetector(
+            onTap: () {
+              // Navigasi ke Settings Page
+              Navigator.push(
+                context, 
+                MaterialPageRoute(builder: (context) => const SettingsPage())
+              );
+            },
+            child: CircleAvatar(
+              radius: 20,
+              backgroundColor: Colors.grey[300],
+              backgroundImage: asyncUser != null 
+                ? NetworkImage(asyncUser.value!.photoUrl) 
+                : null, // Loading or Error
+              child: asyncUser.isLoading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : null,
+            ),
+          ),
+          const SizedBox(width: 16),
+          ],
       ),
 
       // 2. Body dengan IndexedStack (State Preservation)
