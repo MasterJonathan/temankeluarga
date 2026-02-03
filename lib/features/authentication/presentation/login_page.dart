@@ -154,7 +154,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       child: _SocialButton(
                         icon: Icons.g_mobiledata, // Icon Google
                         label: "Google",
-                        onTap: () => _handleLogin(
+                        onTap: () => _handleGoogleLogin(
                           context,
                           ref,
                         ), // Panggil Controller Login Google
@@ -268,17 +268,51 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   void _handleLogin(BuildContext context, WidgetRef ref) async {
+    // ... (Existing Email Login Logic) ...
     // Tutup Keyboard
     FocusScope.of(context).unfocus();
 
     setState(() => _isLoading = true);
 
-    // Panggil Controller (Login with Email/Pass logic belum ada di controller, pakai Google dulu sbg simulasi)
-    await ref.read(authControllerProvider).loginWithGoogle();
+    try {
+      // Panggil Controller Login Email/Pass
+      await ref
+          .read(authControllerProvider)
+          .login(_emailController.text, _passwordController.text);
+      // Main.dart will automatically redirect on auth change
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Login Gagal: ${e.toString()}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
-    // Note: Tidak ada Popup Peran di sini. Langsung masuk Home.
-    if (mounted) {
-      setState(() => _isLoading = false);
+  void _handleGoogleLogin(BuildContext context, WidgetRef ref) async {
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authControllerProvider).loginWithGoogle();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Google Login Gagal: ${e.toString()}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 }
