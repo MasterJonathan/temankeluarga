@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:silver_guide/app/theme/app_theme.dart';
 import 'package:silver_guide/features/medication/domain/medication_model.dart';
 import 'package:silver_guide/features/medication/presentation/medication_controller.dart';
@@ -16,9 +17,11 @@ class TimelineTaskItem extends ConsumerWidget {
     // Jika Belum: Card Putih, Teks Coklat
     final cardColor = task.isTaken ? AppColors.primary : Colors.white;
     final textColor = task.isTaken ? Colors.white : AppColors.textPrimary;
-    final subTextColor = task.isTaken ? Colors.white70 : AppColors.textSecondary;
+    final subTextColor = task.isTaken
+        ? Colors.white70
+        : AppColors.textSecondary;
 
-    // Logic Tombol: 
+    // Logic Tombol:
     // Jika Done: Tombol Putih, Teks Hijau
     // Jika Belum: Tombol Hijau, Teks Putih
     final btnBgColor = task.isTaken ? Colors.white : AppColors.primary;
@@ -101,7 +104,10 @@ class TimelineTaskItem extends ConsumerWidget {
                                 children: [
                                   Text(
                                     task.title,
-                                    style: AppTheme.lightTheme.textTheme.titleLarge
+                                    style: AppTheme
+                                        .lightTheme
+                                        .textTheme
+                                        .titleLarge
                                         ?.copyWith(
                                           fontSize: 19,
                                           fontWeight: FontWeight.bold,
@@ -115,10 +121,11 @@ class TimelineTaskItem extends ConsumerWidget {
                                   const SizedBox(height: 6),
                                   Text(
                                     task.description,
-                                    style: AppTheme.lightTheme.textTheme.bodyMedium
-                                        ?.copyWith(
-                                          color: subTextColor,
-                                        ),
+                                    style: AppTheme
+                                        .lightTheme
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(color: subTextColor),
                                   ),
                                 ],
                               ),
@@ -144,15 +151,15 @@ class TimelineTaskItem extends ConsumerWidget {
                               color: btnBgColor,
                               borderRadius: BorderRadius.circular(16),
                               // Opsional: Shadow halus untuk tombol agar lebih "pop"
-                              boxShadow: task.isTaken 
-                                ? [] 
-                                : [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2)
-                                    )
-                                  ],
+                              boxShadow: task.isTaken
+                                  ? []
+                                  : [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -169,7 +176,7 @@ class TimelineTaskItem extends ConsumerWidget {
                                   task.isTaken
                                       ? "Batalkan"
                                       : "Konfirmasi Minum",
-                                  style: TextStyle(
+                                  style: GoogleFonts.openSans(
                                     color: btnTextColor,
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
