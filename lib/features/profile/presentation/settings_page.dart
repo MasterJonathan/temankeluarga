@@ -297,101 +297,86 @@ class _GuardianControlCard extends StatelessWidget {
 class _FamilyConnectionCard extends StatelessWidget {
   final UserProfile user;
   final WidgetRef ref;
-
+  
   const _FamilyConnectionCard({required this.user, required this.ref});
 
   @override
   Widget build(BuildContext context) {
-    bool hasFamily = user.familyId != null;
+    bool hasFamily = user.familyId != null && user.familyId!.isNotEmpty;
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white, 
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
+          BoxShadow(color: AppColors.shadow.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
         ],
       ),
       child: Column(
         children: [
           if (hasFamily)
             ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 8,
-              ),
-              leading: const Icon(
-                Icons.vpn_key_outlined,
-                color: AppColors.textSecondary,
-              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              leading: const Icon(Icons.vpn_key_outlined, color: AppColors.textSecondary),
               title: const Text("Kode Keluarga"),
               subtitle: Text(
-                user.familyId!,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: AppColors.primary,
-                  letterSpacing: 1.0,
-                ),
+                user.familyId!, 
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary, letterSpacing: 1.0)
               ),
               trailing: IconButton(
                 icon: const Icon(Icons.copy, size: 20),
                 onPressed: () {
-                  Clipboard.setData(ClipboardData(text: user.familyId!));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Kode disalin!")),
-                  );
+                   Clipboard.setData(ClipboardData(text: user.familyId!));
+                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Kode disalin!")));
                 },
               ),
             )
           else
-            ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 8,
-              ),
-              leading: const Icon(
-                Icons.group_add_outlined,
-                color: AppColors.primary,
-              ),
-              title: const Text("Gabung Keluarga"),
-              subtitle: const Text("Masukkan kode undangan"),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 14,
-                color: Colors.black26,
-              ),
-              onTap: () {
-                _showJoinDialog(context, ref);
-              },
+            // LOGIKA BELUM PUNYA KELUARGA
+            Column(
+              children: [
+                // 1. Opsi Gabung (Untuk Semua Role)
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  leading: const Icon(Icons.group_add_outlined, color: AppColors.primary),
+                  title: const Text("Gabung Keluarga"),
+                  subtitle: const Text("Masukkan kode undangan"),
+                  trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.black26),
+                  onTap: () {
+                    _showJoinDialog(context, ref);
+                  },
+                ),
+                
+                // 2. Opsi Buat Baru (HANYA GUARDIAN)
+                if (user.role == UserRole.guardian) ...[
+                   const Divider(height: 2, color: AppColors.surface),
+                   ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                    leading: const Icon(Icons.add_home_work_outlined, color: AppColors.accent),
+                    title: const Text("Buat Keluarga Baru"),
+                    subtitle: const Text("Dapatkan kode untuk dibagikan"),
+                    trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.black26),
+                    onTap: () async {
+                      try {
+                        await ref.read(profileControllerProvider.notifier).createFamily();
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Keluarga berhasil dibuat!")));
+                      } catch (e) {
+                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal: $e"), backgroundColor: Colors.red));
+                      }
+                    },
+                  ),
+                ]
+              ],
             ),
-
-          // Divider sesuai request (Warna Surface)
+          
           const Divider(height: 2, color: AppColors.surface),
-
+          
           ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 8,
-            ),
-            leading: const Icon(
-              Icons.people_outline,
-              color: AppColors.textSecondary,
-            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            leading: const Icon(Icons.people_outline, color: AppColors.textSecondary),
             title: const Text("Anggota Keluarga"),
-            subtitle: Text(
-              hasFamily ? "3 Anggota terhubung" : "Belum ada",
-              style: const TextStyle(fontSize: 13),
-            ),
-            trailing: const Icon(
-              Icons.arrow_forward_ios,
-              size: 14,
-              color: Colors.black26,
-            ),
+            // Nanti kita update ini dengan hitungan real
+            subtitle: Text(hasFamily ? "Terhubung" : "Belum ada", style: const TextStyle(fontSize: 13)),
           ),
         ],
       ),
@@ -401,46 +386,38 @@ class _FamilyConnectionCard extends StatelessWidget {
   void _showJoinDialog(BuildContext context, WidgetRef ref) {
     final controller = TextEditingController();
     showDialog(
-      context: context,
+      context: context, 
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text("Gabung Keluarga"),
         content: TextField(
           controller: controller,
+          textCapitalization: TextCapitalization.characters, // Otomatis Huruf Besar
           decoration: InputDecoration(
-            hintText: "Contoh: KEL-8899",
+            hintText: "Contoh: ABC1234", 
             filled: true,
             fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text(
-              "Batal",
-              style: TextStyle(color: AppColors.textSecondary),
-            ),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Batal", style: TextStyle(color: AppColors.textSecondary))),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () {
-              ref
-                  .read(profileControllerProvider.notifier)
-                  .joinFamily(controller.text);
-              Navigator.pop(ctx);
-            },
-            child: const Text("Gabung"),
-          ),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            onPressed: () async {
+              try {
+                await ref.read(profileControllerProvider.notifier).joinFamily(controller.text);
+                if (ctx.mounted) Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Berhasil bergabung!")));
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal: $e"), backgroundColor: Colors.red));
+              }
+            }, 
+            child: const Text("Gabung")
+          )
         ],
-      ),
+      )
     );
   }
 }
@@ -489,7 +466,7 @@ class _GeneralSettingsCard extends StatelessWidget {
               style: TextStyle(fontSize: 12),
             ),
             onTap: () {
-              ref.read(profileControllerProvider.notifier).toggleRoleForDemo();
+              // ref.read(profileControllerProvider.notifier).too();
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text("Role Berubah! Cek Header Profil."),

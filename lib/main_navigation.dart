@@ -56,7 +56,8 @@ class MainNavigationScaffold extends ConsumerWidget {
               radius: 20,
               backgroundColor: Colors.grey[300],
               backgroundImage: asyncUser != null 
-                ? NetworkImage(asyncUser.value!.photoUrl) 
+                ? NetworkImage("https://cdn-icons-png.flaticon.com/256/149/149071.png") 
+                // ? NetworkImage(asyncUser.value!.photoUrl) 
                 : null, // Loading or Error
               child: asyncUser.isLoading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : null,
             ),

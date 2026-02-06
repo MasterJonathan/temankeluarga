@@ -87,18 +87,23 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
     setState(() => _isLoading = true);
 
-    // Register ke Firebase Auth
     try {
-      await ref
-          .read(authControllerProvider)
-          .register(_emailController.text, _passController.text);
+      // Panggil Controller dengan Data Lengkap
+      await ref.read(authControllerProvider).register(
+        email: _emailController.text,
+        password: _passController.text,
+        name: _nameController.text,
+        phone: _phoneController.text,
+        roleStr: _selectedRole!, // 'elderly' atau 'guardian'
+      );
 
+      // Jika sukses, Auth State akan berubah jadi 'LoggedIn'
+      // Main.dart akan otomatis merubah halaman ke MainNavigationScaffold
+      // Kita perlu memastikan navigasi stack bersih
       if (mounted) {
         setState(() => _isLoading = false);
-        // Clear navigation stack to reveal the new 'home' (MainNavigationScaffold)
         Navigator.of(context).popUntil((route) => route.isFirst);
       }
-      // TODO: Save _nameController.text and _selectedRole to Firestore
     } catch (e) {
       _showError("Registrasi Gagal: ${e.toString()}");
       if (mounted) setState(() => _isLoading = false);

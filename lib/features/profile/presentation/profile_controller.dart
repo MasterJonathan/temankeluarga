@@ -1,30 +1,47 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:silver_guide/features/authentication/presentation/auth_controller.dart'; // Import Auth Controller
 import '../domain/user_model.dart';
 import '../data/profile_repository.dart';
 
-class ProfileController extends AsyncNotifier<UserProfile> {
+
+class ProfileController extends StreamNotifier<UserProfile> {
+  
   @override
-  FutureOr<UserProfile> build() async {
-    final repo = ref.read(profileRepositoryProvider);
-    return repo.getCurrentUser();
+  Stream<UserProfile> build() {
+    // 1. LISTEN KE AUTH STATE
+    // Ini kuncinya! Jika user logout (jadi null) atau login user baru,
+    // baris ini akan memicu ProfileController untuk dijalankan ulang (Rebuild).
+    final authState = ref.watch(authStateProvider);
+
+    return authState.when(
+      data: (user) {
+        if (user == null) {
+          // Jika tidak ada user login, return stream kosong atau error
+          return const Stream.empty();
+        }
+        // Jika ada user, panggil repository dengan UID yang baru
+        final repo = ref.read(profileRepositoryProvider);
+        return repo.watchUser(user.uid);
+      },
+      error: (e, st) => Stream.error(e, st),
+      loading: () => const Stream.empty(),
+    );
   }
 
-  // Fungsi untuk Demo: Ganti Peran (User -> Guardian -> User)
-  Future<void> toggleRoleForDemo() async {
-    final repo = ref.read(profileRepositoryProvider);
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() => repo.switchRoleDemo());
-  }
-
-  // Fungsi Gabung Keluarga
+  // Fungsi Action tetap sama
   Future<void> joinFamily(String code) async {
     final repo = ref.read(profileRepositoryProvider);
-    // Kita tidak set loading full screen, tapi biarkan UI menangani loading state tombol
-    await repo.joinFamily(code);
-    ref.invalidateSelf(); // Refresh data user
+    await repo.joinFamily(code.toUpperCase().trim());
   }
+
+  Future<void> createFamily() async {
+    final repo = ref.read(profileRepositoryProvider);
+    await repo.createFamilyGroup();
+  }
+
+  
 }
 
 final profileControllerProvider = 
-    AsyncNotifierProvider<ProfileController, UserProfile>(() => ProfileController());
+    StreamNotifierProvider<ProfileController, UserProfile>(() => ProfileController());
