@@ -1,81 +1,69 @@
-import 'dart:math';
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/memory_model.dart';
 
 class MemoryRepository {
-  final List<MemoryPost> _memories = [
-    MemoryPost(
-      id: '1',
-      content: 'Alhamdulillah, hari ini rasanya badan lebih segar. Tadi pagi sempat jalan kaki sedikit di depan rumah sama Ibu.',
-      imageUrl: null, // Hanya teks
-      date: DateTime.now(), // Hari ini
-      reactionCounts: {'❤️': 3, '👍': 1},
-      selectedReaction: '❤️',
-    ),
-    MemoryPost(
-      id: '2',
-      content: 'Cucu kesayangan mampir bawakan martabak. Senang sekali rumah jadi ramai.',
-      imageUrl: 'https://images.unsplash.com/photo-1511895426328-dc8714191300?w=500&q=80',
-      date: DateTime.now().subtract(const Duration(days: 1)), // Kemarin
-      reactionCounts: {'🥰': 5},
-    ),
-    MemoryPost(
-      id: '3',
-      content: 'Hujan deras dari sore. Jadi teringat masa dulu waktu anak-anak masih kecil sering main hujan.',
-      imageUrl: null,
-      date: DateTime.now().subtract(const Duration(days: 1)),
-      reactionCounts: {'🙏': 2},
-    ),
-  ];
+  final FirebaseFirestore _firestore;
+  final FirebaseStorage _storage;
 
-  Future<List<MemoryPost>> getMemories() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    return _memories;
-  }
+  MemoryRepository(this._firestore, this._storage);
 
-  // Input sekarang menerima Teks + Opsional Image Path
-  Future<MemoryPost> addDiaryEntry(String text, String? imagePath) async {
-    await Future.delayed(const Duration(seconds: 1));
-    
-    final newPost = MemoryPost(
-      id: DateTime.now().toIso8601String(),
-      content: text,
-      imageUrl: imagePath, // Bisa null
-      date: DateTime.now(),
-      reactionCounts: {},
-    );
-    
-    _memories.insert(0, newPost);
-    return newPost;
-  }
-
-  // Update Reaksi
-  Future<void> reactToPost(String id, String emoji) async {
-    // Logic update backend dummy
-    final index = _memories.indexWhere((e) => e.id == id);
-    if (index != -1) {
-      final old = _memories[index];
-      // Simple toggle logic for demo
-      final newCounts = Map<String, int>.from(old.reactionCounts);
+  // 1. Upload Gambar ke Firebase Storage
+  Future<String?> uploadImage(File imageFile, String familyId) async {
+    try {
+      final fileName = DateTime.now().millisecondsSinceEpoch.toString();
+      final ref = _storage.ref().child('families/$familyId/memories/$fileName.jpg');
       
-      // Jika sudah pilih ini, remove (unlike). Jika belum, add.
-      if (old.selectedReaction == emoji) {
-        newCounts[emoji] = (newCounts[emoji] ?? 1) - 1;
-        if (newCounts[emoji] == 0) newCounts.remove(emoji);
-        _memories[index] = old.copyWith(selectedReaction: null, reactionCounts: newCounts);
+      await ref.putFile(imageFile);
+      return await ref.getDownloadURL();
+    } catch (e) {
+      print("Upload Error: $e");
+      return null;
+    }
+  }
+
+  // 2. Simpan Postingan
+  Future<void> addMemory(MemoryPost post) async {
+    await _firestore.collection('memories').add(post.toMap());
+  }
+
+  // 3. Ambil Postingan (Berdasarkan Family ID)
+  Stream<List<MemoryPost>> watchMemories(String familyId) {
+    return _firestore
+        .collection('memories')
+        .where('familyId', isEqualTo: familyId)
+        .orderBy('date', descending: true) // Terbaru di atas
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) {
+            return MemoryPost.fromMap(doc.id, doc.data());
+          }).toList();
+        });
+  }
+
+  // 4. Toggle Reaksi
+  Future<void> reactToPost(String postId, String userId, String emoji) async {
+    final docRef = _firestore.collection('memories').doc(postId);
+    final doc = await docRef.get();
+    
+    if (doc.exists) {
+      final currentReactions = Map<String, String>.from(doc.data()?['reactions'] ?? {});
+      
+      // Jika user sudah bereaksi dengan emoji yg sama -> Hapus (Unlike)
+      if (currentReactions[userId] == emoji) {
+        currentReactions.remove(userId);
       } else {
-        // Remove old reaction if exists
-        if (old.selectedReaction != null) {
-           final oldEmoji = old.selectedReaction!;
-           newCounts[oldEmoji] = (newCounts[oldEmoji] ?? 1) - 1;
-           if (newCounts[oldEmoji] == 0) newCounts.remove(oldEmoji);
-        }
-        // Add new
-        newCounts[emoji] = (newCounts[emoji] ?? 0) + 1;
-        _memories[index] = old.copyWith(selectedReaction: emoji, reactionCounts: newCounts);
+        // Jika belum atau ganti emoji -> Update
+        currentReactions[userId] = emoji;
       }
+
+      await docRef.update({'reactions': currentReactions});
     }
   }
 }
 
-final memoryRepositoryProvider = Provider((ref) => MemoryRepository());
+final memoryRepositoryProvider = Provider((ref) {
+  return MemoryRepository(FirebaseFirestore.instance, FirebaseStorage.instance);
+});

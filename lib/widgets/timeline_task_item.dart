@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:silver_guide/app/theme/app_theme.dart';
 import 'package:silver_guide/features/medication/domain/medication_model.dart';
-import 'package:silver_guide/features/medication/presentation/medication_controller.dart';
+import 'package:silver_guide/features/medication/presentation/medication_actions.dart';
+import 'package:silver_guide/features/medication/presentation/medication_provider.dart';
 
 class TimelineTaskItem extends ConsumerWidget {
   final MedicationTask task;
@@ -16,13 +17,17 @@ class TimelineTaskItem extends ConsumerWidget {
     // Jika Belum: Card Putih, Teks Coklat
     final cardColor = task.isTaken ? AppColors.primary : Colors.white;
     final textColor = task.isTaken ? Colors.white : AppColors.textPrimary;
-    final subTextColor = task.isTaken ? Colors.white70 : AppColors.textSecondary;
+    final subTextColor = task.isTaken
+        ? Colors.white70
+        : AppColors.textSecondary;
 
-    // Logic Tombol: 
+    // Logic Tombol:
     // Jika Done: Tombol Putih, Teks Hijau
     // Jika Belum: Tombol Hijau, Teks Putih
     final btnBgColor = task.isTaken ? Colors.white : AppColors.primary;
     final btnTextColor = task.isTaken ? AppColors.primary : Colors.white;
+
+    final bool hasImage = task.imageUrl != null && task.imageUrl!.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -88,7 +93,11 @@ class TimelineTaskItem extends ConsumerWidget {
                                 color: Colors.white,
                                 borderRadius: BorderRadius.circular(16),
                                 image: DecorationImage(
-                                  image: NetworkImage(task.imageUrl),
+                                  image: NetworkImage(
+                                    hasImage 
+                                      ? task.imageUrl! 
+                                      : "https://cdn-icons-png.flaticon.com/256/883/883407.png", // Ikon obat default
+                                  ),
                                   fit: BoxFit.cover,
                                 ),
                               ),
@@ -101,7 +110,10 @@ class TimelineTaskItem extends ConsumerWidget {
                                 children: [
                                   Text(
                                     task.title,
-                                    style: AppTheme.lightTheme.textTheme.titleLarge
+                                    style: AppTheme
+                                        .lightTheme
+                                        .textTheme
+                                        .titleLarge
                                         ?.copyWith(
                                           fontSize: 19,
                                           fontWeight: FontWeight.bold,
@@ -115,10 +127,11 @@ class TimelineTaskItem extends ConsumerWidget {
                                   const SizedBox(height: 6),
                                   Text(
                                     task.description,
-                                    style: AppTheme.lightTheme.textTheme.bodyMedium
-                                        ?.copyWith(
-                                          color: subTextColor,
-                                        ),
+                                    style: AppTheme
+                                        .lightTheme
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(color: subTextColor),
                                   ),
                                 ],
                               ),
@@ -132,9 +145,14 @@ class TimelineTaskItem extends ConsumerWidget {
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                         child: InkWell(
                           onTap: () {
+                            // PERBAIKAN: Kirim task.userId sebagai parameter pertama
                             ref
-                                .read(medicationControllerProvider.notifier)
-                                .toggleTaskStatus(task.id);
+                                .read(medicationActionsProvider)
+                                .toggleTaskStatus(
+                                  task.userId, // <--- User ID
+                                  task.id, // <--- Med ID
+                                  task.isTaken, // <--- Status Lama
+                                );
                           },
                           borderRadius: BorderRadius.circular(16),
                           child: Container(
@@ -144,15 +162,15 @@ class TimelineTaskItem extends ConsumerWidget {
                               color: btnBgColor,
                               borderRadius: BorderRadius.circular(16),
                               // Opsional: Shadow halus untuk tombol agar lebih "pop"
-                              boxShadow: task.isTaken 
-                                ? [] 
-                                : [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2)
-                                    )
-                                  ],
+                              boxShadow: task.isTaken
+                                  ? []
+                                  : [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,

@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:math'; // Untuk generate kode acak
 import '../domain/user_model.dart';
@@ -70,7 +73,40 @@ class ProfileRepository {
   }
 
 
-  
+   Future<List<UserProfile>> getFamilyMembers(String familyId) async {
+    final querySnapshot = await _firestore
+        .collection('users')
+        .where('familyId', isEqualTo: familyId)
+        .get();
+        
+    if (querySnapshot.docs.isEmpty) return [];
+
+    return querySnapshot.docs
+        .map((doc) => UserProfile.fromMap(doc.data()))
+        .toList();
+  }
+
+  // 4. Update Data Profil (Nama & HP)
+  Future<void> updateProfile({required String uid, required String name, required String phone}) async {
+    await _firestore.collection('users').doc(uid).update({
+      'name': name,
+      'phone': phone,
+    });
+  }
+
+  // 5. Update Foto Profil
+  // (Pastikan package firebase_storage sudah diimport)
+  Future<String> updateProfilePicture(String uid, File imageFile) async {
+    final ref = FirebaseStorage.instance.ref().child('users/$uid/profile.jpg');
+    await ref.putFile(imageFile);
+    final url = await ref.getDownloadURL();
+    
+    await _firestore.collection('users').doc(uid).update({
+      'photoUrl': url,
+    });
+    
+    return url;
+  }
 }
 
 // Provider

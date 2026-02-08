@@ -1,26 +1,60 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class MedicationTask {
   final String id;
-  final String title;      // Nama Obat: "Amlodipine", "Vitamin D"
-  final String description;// Dosis/Instruksi: "1 Tablet - Setelah Makan"
-  final String time;       // "08:00", "13:00"
-  final String imageUrl;   // Foto obat (Penting untuk visual)
-  final bool isTaken;      // Status sudah diminum?
-  final DateTime? takenAt; // Kapan diminum
+  final String userId;
+  final String title;
+  final String description;
+  final String time;
+  final String? imageUrl;
+  final bool isTaken;
+  final DateTime? takenAt;
 
   MedicationTask({
     required this.id,
+    required this.userId,
     required this.title,
     required this.description,
     required this.time,
-    required this.imageUrl,
+    this.imageUrl,
     this.isTaken = false,
     this.takenAt,
   });
 
-  // Untuk update state (Immutability)
-  MedicationTask copyWith({bool? isTaken, DateTime? takenAt}) {
+  Map<String, dynamic> toMap() {
+    return {
+      // 'id' tidak perlu disimpan di field, karena sudah jadi ID dokumen
+      'userId': userId,
+      'title': title,
+      'description': description,
+      'time': time,
+      'imageUrl': imageUrl,
+    };
+  }
+
+  factory MedicationTask.fromMap(String docId, Map<String, dynamic> map, bool isTaskTaken, DateTime? taskTakenAt) {
     return MedicationTask(
-      id: id,
+      id: docId, // Ambil ID dari dokumen, bukan field
+      userId: map['userId'] ?? '',
+      title: map['title'] ?? '',
+      description: map['description'] ?? '',
+      time: map['time'] ?? '00:00',
+      imageUrl: map['imageUrl'],
+      isTaken: isTaskTaken,
+      takenAt: taskTakenAt,
+    );
+  }
+
+  // --- PERBAIKAN DI SINI ---
+  MedicationTask copyWith({
+    String? id,
+    String? userId,
+    bool? isTaken,
+    DateTime? takenAt,
+  }) {
+    return MedicationTask(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
       title: title,
       description: description,
       time: time,

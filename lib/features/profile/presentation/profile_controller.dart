@@ -1,26 +1,20 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:silver_guide/features/authentication/presentation/auth_controller.dart'; // Import Auth Controller
+import 'package:silver_guide/features/authentication/presentation/auth_controller.dart';
 import '../domain/user_model.dart';
 import '../data/profile_repository.dart';
 
+// IMPORT WAJIB:
+import 'package:silver_guide/features/profile/presentation/guardian_state.dart';
 
 class ProfileController extends StreamNotifier<UserProfile> {
-  
   @override
   Stream<UserProfile> build() {
-    // 1. LISTEN KE AUTH STATE
-    // Ini kuncinya! Jika user logout (jadi null) atau login user baru,
-    // baris ini akan memicu ProfileController untuk dijalankan ulang (Rebuild).
     final authState = ref.watch(authStateProvider);
-
     return authState.when(
       data: (user) {
-        if (user == null) {
-          // Jika tidak ada user login, return stream kosong atau error
-          return const Stream.empty();
-        }
-        // Jika ada user, panggil repository dengan UID yang baru
+        if (user == null) return const Stream.empty();
         final repo = ref.read(profileRepositoryProvider);
         return repo.watchUser(user.uid);
       },
@@ -28,8 +22,7 @@ class ProfileController extends StreamNotifier<UserProfile> {
       loading: () => const Stream.empty(),
     );
   }
-
-  // Fungsi Action tetap sama
+  
   Future<void> joinFamily(String code) async {
     final repo = ref.read(profileRepositoryProvider);
     await repo.joinFamily(code.toUpperCase().trim());
@@ -40,8 +33,33 @@ class ProfileController extends StreamNotifier<UserProfile> {
     await repo.createFamilyGroup();
   }
 
-  
+  Future<void> updateProfile(String name, String phone) async {
+    final user = state.value;
+    if (user == null) return;
+    
+    final repo = ref.read(profileRepositoryProvider);
+    await repo.updateProfile(uid: user.id, name: name, phone: phone);
+  }
+
+  Future<void> updatePhoto(File imageFile) async {
+    final user = state.value;
+    if (user == null) return;
+
+    final repo = ref.read(profileRepositoryProvider);
+    await repo.updateProfilePicture(user.id, imageFile);
+  }
 }
+
+final familyMembersProvider = FutureProvider.autoDispose<List<UserProfile>>((
+  ref,
+) async {
+  final userProfile = await ref.watch(profileControllerProvider.future);
+  if (userProfile.familyId == null) return [];
+
+  final repo = ref.read(profileRepositoryProvider);
+  return repo.getFamilyMembers(userProfile.familyId!);
+});
 
 final profileControllerProvider = 
     StreamNotifierProvider<ProfileController, UserProfile>(() => ProfileController());
+

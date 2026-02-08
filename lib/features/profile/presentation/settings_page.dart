@@ -3,8 +3,12 @@ import 'package:flutter/services.dart'; // Untuk Copy Clipboard
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:silver_guide/app/theme/app_theme.dart';
 import 'package:silver_guide/features/authentication/presentation/auth_controller.dart';
+import 'package:silver_guide/features/medication/presentation/medication_provider.dart';
+import 'package:silver_guide/features/profile/data/profile_repository.dart';
 import 'package:silver_guide/features/profile/domain/user_model.dart';
-import 'profile_controller.dart';
+import 'package:silver_guide/features/profile/presentation/guardian_state.dart';
+import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
+import 'package:silver_guide/widgets/edit_profile_sheet.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -26,68 +30,27 @@ class SettingsPage extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Column(
             children: [
-              // 1. Profil Card (Header)
               _ProfileHeaderCard(user: user),
-
               const SizedBox(height: 24),
 
-              // 2. Bagian Khusus Guardian (Remote Control)
-              // Hanya "Switch Profile", tombol tambah obat dihapus
-              if (user.role == UserRole.guardian) ...[
-                const _SectionTitle(title: "MODE PENDAMPING"),
-                _GuardianControlCard(user: user),
-                const SizedBox(height: 24),
-              ],
-
-              // 3. Bagian Keluarga
+              // Bagian Keluarga
               const _SectionTitle(title: "KELUARGA"),
               _FamilyConnectionCard(user: user, ref: ref),
 
               const SizedBox(height: 24),
 
-              // 4. Pengaturan Umum
+              // Pengaturan Umum
               const _SectionTitle(title: "UMUM"),
               _GeneralSettingsCard(ref: ref),
 
               const SizedBox(height: 40),
 
-              // 5. Tombol Logout (Sekarang terlihat seperti tombol)
+              // Tombol Logout
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (ctx) => AlertDialog(
-                        title: const Text("Keluar Akun?"),
-                        content: const Text(
-                          "Anda harus login kembali untuk mengakses aplikasi.",
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(ctx),
-                            child: const Text("Batal"),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              Navigator.pop(ctx); // Tutup Dialog
-                              await ref.read(authControllerProvider).logout();
-                              // Karena main.dart memantau authState, ia akan otomatis merender LoginPage
-                              // Kita hanya perlu pastikan stack navigasi bersih
-                              if (context.mounted) {
-                                Navigator.of(
-                                  context,
-                                ).popUntil((route) => route.isFirst);
-                              }
-                            },
-                            child: const Text(
-                              "Keluar",
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
+                    _showLogoutDialog(context, ref);
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.red[700],
@@ -105,15 +68,6 @@ class SettingsPage extends ConsumerWidget {
                   ),
                 ),
               ),
-
-              const SizedBox(height: 20),
-              Text(
-                "Versi 1.0.0 (Beta)",
-                style: TextStyle(
-                  color: AppColors.textSecondary.withOpacity(0.5),
-                  fontSize: 12,
-                ),
-              ),
               const SizedBox(height: 40),
             ],
           ),
@@ -122,6 +76,33 @@ class SettingsPage extends ConsumerWidget {
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
         error: (err, _) => Center(child: Text("Error: $err")),
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Keluar Akun?"),
+        content: const Text(
+          "Anda harus login kembali untuk mengakses aplikasi.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Batal"),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(authControllerProvider).logout();
+              if (context.mounted)
+                Navigator.of(context).popUntil((route) => route.isFirst);
+            },
+            child: const Text("Keluar", style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }
@@ -189,11 +170,8 @@ class _ProfileHeaderCard extends StatelessWidget {
               children: [
                 Text(
                   user.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Playfair Display',
+                  style: AppTheme.lightTheme.textTheme.displayMedium?.copyWith(
+                    color: AppColors.surface,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -220,75 +198,17 @@ class _ProfileHeaderCard extends StatelessWidget {
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-// Card Khusus Guardian: "Switch Profil" (Tanpa Border Kuning, Tanpa Tombol Tambah)
-class _GuardianControlCard extends StatelessWidget {
-  final UserProfile user;
-  const _GuardianControlCard({required this.user});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        // Tanpa Border Kuning sesuai request
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+          IconButton(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (ctx) => EditProfileSheet(user: user),
+              );
+            },
+            icon: const Icon(Icons.edit, color: Colors.white),
           ),
         ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.supervised_user_circle,
-            color: AppColors.primary,
-            size: 24,
-          ),
-        ),
-        title: const Text(
-          "Sedang Memantau",
-          style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-        ),
-        subtitle: const Text(
-          "Bapak Sutomo", // Nanti dinamis
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.black12),
-          ),
-          child: const Text(
-            "Ganti",
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-          ),
-        ),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Fitur Ganti Profil (Simulasi)")),
-          );
-        },
       ),
     );
   }
@@ -297,7 +217,7 @@ class _GuardianControlCard extends StatelessWidget {
 class _FamilyConnectionCard extends StatelessWidget {
   final UserProfile user;
   final WidgetRef ref;
-  
+
   const _FamilyConnectionCard({required this.user, required this.ref});
 
   @override
@@ -306,77 +226,127 @@ class _FamilyConnectionCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white, 
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: AppColors.shadow.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))
+          BoxShadow(
+            color: AppColors.shadow.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Column(
         children: [
           if (hasFamily)
             ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-              leading: const Icon(Icons.vpn_key_outlined, color: AppColors.textSecondary),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 8,
+              ),
+              leading: const Icon(
+                Icons.vpn_key_outlined,
+                color: AppColors.textSecondary,
+              ),
               title: const Text("Kode Keluarga"),
               subtitle: Text(
-                user.familyId!, 
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary, letterSpacing: 1.0)
+                user.familyId!,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: AppColors.primary,
+                  letterSpacing: 1.0,
+                ),
               ),
               trailing: IconButton(
                 icon: const Icon(Icons.copy, size: 20),
                 onPressed: () {
-                   Clipboard.setData(ClipboardData(text: user.familyId!));
-                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Kode disalin!")));
+                  Clipboard.setData(ClipboardData(text: user.familyId!));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Kode disalin!")),
+                  );
                 },
               ),
             )
           else
-            // LOGIKA BELUM PUNYA KELUARGA
             Column(
               children: [
-                // 1. Opsi Gabung (Untuk Semua Role)
                 ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  leading: const Icon(Icons.group_add_outlined, color: AppColors.primary),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  leading: const Icon(
+                    Icons.group_add_outlined,
+                    color: AppColors.primary,
+                  ),
                   title: const Text("Gabung Keluarga"),
                   subtitle: const Text("Masukkan kode undangan"),
-                  trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.black26),
-                  onTap: () {
-                    _showJoinDialog(context, ref);
-                  },
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 14,
+                    color: Colors.black26,
+                  ),
+                  onTap: () => _showJoinDialog(context, ref),
                 ),
-                
-                // 2. Opsi Buat Baru (HANYA GUARDIAN)
                 if (user.role == UserRole.guardian) ...[
-                   const Divider(height: 2, color: AppColors.surface),
-                   ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                    leading: const Icon(Icons.add_home_work_outlined, color: AppColors.accent),
+                  const Divider(height: 2, color: AppColors.surface),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
+                    ),
+                    leading: const Icon(
+                      Icons.add_home_work_outlined,
+                      color: AppColors.accent,
+                    ),
                     title: const Text("Buat Keluarga Baru"),
                     subtitle: const Text("Dapatkan kode untuk dibagikan"),
-                    trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.black26),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: Colors.black26,
+                    ),
                     onTap: () async {
                       try {
-                        await ref.read(profileControllerProvider.notifier).createFamily();
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Keluarga berhasil dibuat!")));
+                        await ref
+                            .read(profileControllerProvider.notifier)
+                            .createFamily();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Keluarga berhasil dibuat!"),
+                          ),
+                        );
                       } catch (e) {
-                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal: $e"), backgroundColor: Colors.red));
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Gagal: $e"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
                       }
                     },
                   ),
-                ]
+                ],
               ],
             ),
-          
+
           const Divider(height: 2, color: AppColors.surface),
-          
+
           ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            leading: const Icon(Icons.people_outline, color: AppColors.textSecondary),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 8,
+            ),
+            leading: const Icon(
+              Icons.people_outline,
+              color: AppColors.textSecondary,
+            ),
             title: const Text("Anggota Keluarga"),
-            // Nanti kita update ini dengan hitungan real
-            subtitle: Text(hasFamily ? "Terhubung" : "Belum ada", style: const TextStyle(fontSize: 13)),
+            subtitle: Text(
+              hasFamily ? "Terhubung" : "Belum ada",
+              style: const TextStyle(fontSize: 13),
+            ),
           ),
         ],
       ),
@@ -386,38 +356,59 @@ class _FamilyConnectionCard extends StatelessWidget {
   void _showJoinDialog(BuildContext context, WidgetRef ref) {
     final controller = TextEditingController();
     showDialog(
-      context: context, 
+      context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Text("Gabung Keluarga"),
         content: TextField(
           controller: controller,
-          textCapitalization: TextCapitalization.characters, // Otomatis Huruf Besar
+          textCapitalization: TextCapitalization.characters,
           decoration: InputDecoration(
-            hintText: "Contoh: ABC1234", 
+            hintText: "Contoh: ABC1234",
             filled: true,
             fillColor: Colors.white,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Batal", style: TextStyle(color: AppColors.textSecondary))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text(
+              "Batal",
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.primary, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () async {
               try {
-                await ref.read(profileControllerProvider.notifier).joinFamily(controller.text);
+                await ref
+                    .read(profileControllerProvider.notifier)
+                    .joinFamily(controller.text);
                 if (ctx.mounted) Navigator.pop(ctx);
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Berhasil bergabung!")));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Berhasil bergabung!")),
+                );
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal: $e"), backgroundColor: Colors.red));
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("Gagal: $e"),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
-            }, 
-            child: const Text("Gabung")
-          )
+            },
+            child: const Text("Gabung"),
+          ),
         ],
-      )
+      ),
     );
   }
 }
@@ -442,41 +433,6 @@ class _GeneralSettingsCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // DEMO ONLY: Switch Role
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 6,
-            ),
-            leading: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.purple.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.switch_account,
-                color: Colors.purple,
-                size: 20,
-              ),
-            ),
-            title: const Text("Ganti Peran [Demo]"),
-            subtitle: const Text(
-              "Simulasi switch Lansia <-> Guardian",
-              style: TextStyle(fontSize: 12),
-            ),
-            onTap: () {
-              // ref.read(profileControllerProvider.notifier).too();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Role Berubah! Cek Header Profil."),
-                ),
-              );
-            },
-          ),
-
-          const Divider(height: 2, color: AppColors.surface),
-
           ListTile(
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 20,
@@ -494,9 +450,7 @@ class _GeneralSettingsCard extends StatelessWidget {
               trackOutlineColor: MaterialStateProperty.all(Colors.transparent),
             ),
           ),
-
           const Divider(height: 2, color: AppColors.surface),
-
           const ListTile(
             contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 6),
             leading: Icon(Icons.text_fields, color: AppColors.textSecondary),

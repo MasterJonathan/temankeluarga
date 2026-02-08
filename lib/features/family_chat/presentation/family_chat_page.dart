@@ -1,11 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:silver_guide/app/theme/app_theme.dart';
-import 'chat_controller.dart';
+import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
+import 'chat_provider.dart';
+import 'chat_actions.dart';
 import '../domain/chat_model.dart';
 
-// State lokal untuk menentukan apakah sedang di halaman "Pilih Topik" atau "Ruang Chat"
+// State lokal: Apakah sedang di dalam Room?
 final isChatRoomActiveProvider = StateProvider.autoDispose<bool>((ref) => false);
 
 class FamilyChatPage extends ConsumerWidget {
@@ -14,18 +18,30 @@ class FamilyChatPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isChatActive = ref.watch(isChatRoomActiveProvider);
+    final userAsync = ref.watch(profileControllerProvider);
+    final user = userAsync.value;
 
-    // Animasi transisi sederhana antara Launcher dan Room
+    if (user == null) return const Center(child: CircularProgressIndicator());
+    if (user.familyId == null || user.familyId!.isEmpty) {
+      return const Center(child: Text("Silakan gabung keluarga di Settings."));
+    }
+
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 300),
-      child: isChatActive ? const _ChatRoom() : const _TopicSelector(),
+      child: isChatActive 
+        ? _ChatRoom(familyId: user.familyId!, userId: user.id, userName: user.name) 
+        : _TopicSelector(familyId: user.familyId!, userId: user.id, userName: user.name),
     );
   }
 }
 
-// === BAGIAN 1: TOPIC SELECTOR (LAUNCHER) ===
+// === 1. TOPIC SELECTOR (LAUNCHER) ===
 class _TopicSelector extends ConsumerWidget {
-  const _TopicSelector();
+  final String familyId;
+  final String userId;
+  final String userName;
+
+  const _TopicSelector({required this.familyId, required this.userId, required this.userName});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,52 +53,27 @@ class _TopicSelector extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
-            Text(
-              "Mau bahas apa\nhari ini?",
-              style: AppTheme.lightTheme.textTheme.displayMedium?.copyWith(height: 1.2),
-            ),
+            Text("Mau bahas apa\nhari ini?", style: AppTheme.lightTheme.textTheme.displayMedium?.copyWith(height: 1.2)),
             const SizedBox(height: 8),
-            Text(
-              "Pilih topik biar tidak lupa mau ngomong apa.",
-              style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
-            ),
+            Text("Pilih topik biar tidak lupa.", style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary)),
             const SizedBox(height: 32),
 
-            // Opsi 1: Bahas Kesehatan (Context: Health)
             _TopicCard(
-              icon: Icons.medication,
-              color: AppColors.primary,
-              title: "Lapor Minum Obat",
-              subtitle: "Kabari anak kalau bapak sudah minum obat pagi.",
-              onTap: () {
-                _enterChat(ref, "Sudah minum obat, Pak?", ChatContextType.health, "Laporan Obat: Amlodipine (Selesai)");
-              },
+              icon: Icons.medication, color: AppColors.primary,
+              title: "Lapor Minum Obat", subtitle: "Kabari kalau sudah minum obat.",
+              onTap: () => _enterChat(ref, "Sudah minum obat.", ChatContextType.health, "Laporan Obat"),
             ),
-            
             const SizedBox(height: 16),
-
-            // Opsi 2: Bahas Kenangan (Context: Memory)
             _TopicCard(
-              icon: Icons.photo_album,
-              color: AppColors.accent,
-              title: "Bahas Cerita Tadi",
-              subtitle: "Ngobrolin soal jurnal atau foto cucu yang baru.",
-              onTap: () {
-                _enterChat(ref, "Cerita di jurnal tadi seru ya?", ChatContextType.memory, "Topik: Jurnal Hari Ini");
-              },
+              icon: Icons.photo_album, color: AppColors.accent,
+              title: "Bahas Cerita", subtitle: "Ngobrolin foto atau kenangan.",
+              onTap: () => _enterChat(ref, "Ada cerita seru nih!", ChatContextType.memory, "Topik: Kenangan"),
             ),
-
             const SizedBox(height: 16),
-
-            // Opsi 3: Santai (General)
             _TopicCard(
-              icon: Icons.coffee,
-              color: AppColors.secondary,
-              title: "Obrolan Santai",
-              subtitle: "Sekadar menyapa atau tanya kabar.",
-              onTap: () {
-                _enterChat(ref, null, ChatContextType.general, null);
-              },
+              icon: Icons.coffee, color: AppColors.secondary,
+              title: "Obrolan Santai", subtitle: "Sekadar menyapa keluarga.",
+              onTap: () => _enterChat(ref, null, ChatContextType.general, null),
             ),
           ],
         ),
@@ -90,24 +81,19 @@ class _TopicSelector extends ConsumerWidget {
     );
   }
 
-  void _enterChat(WidgetRef ref, String? initialMessage, ChatContextType type, String? data) {
-    // Masuk ke room
+  void _enterChat(WidgetRef ref, String? text, ChatContextType type, String? data) {
     ref.read(isChatRoomActiveProvider.notifier).state = true;
-    
-    // Jika ada pesan otomatis (pemicu topik), kirimkan
-    if (initialMessage != null) {
-      ref.read(chatControllerProvider.notifier).sendMessage(initialMessage, type: type, extraData: data);
+    if (text != null) {
+      ref.read(chatActionsProvider).sendTextMessage(
+        familyId: familyId, senderId: userId, senderName: userName,
+        text: text, contextType: type, contextData: data
+      );
     }
   }
 }
 
 class _TopicCard extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final String title;
-  final String subtitle;
-  final VoidCallback onTap;
-
+  final IconData icon; final Color color; final String title; final String subtitle; final VoidCallback onTap;
   const _TopicCard({required this.icon, required this.color, required this.title, required this.subtitle, required this.onTap});
 
   @override
@@ -120,7 +106,6 @@ class _TopicCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: AppColors.shadow.withOpacity(0.1)),
           boxShadow: const [BoxShadow(color: AppColors.shadow, blurRadius: 10, offset: Offset(0, 4))],
         ),
         child: Row(
@@ -137,7 +122,7 @@ class _TopicCard extends StatelessWidget {
                 children: [
                   Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.textPrimary)),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14, height: 1.4)),
+                  Text(subtitle, style: const TextStyle(color: AppColors.textSecondary, fontSize: 14)),
                 ],
               ),
             ),
@@ -149,20 +134,47 @@ class _TopicCard extends StatelessWidget {
   }
 }
 
-// === BAGIAN 2: CHAT ROOM ===
+// === 2. CHAT ROOM (REALTIME) ===
 class _ChatRoom extends ConsumerStatefulWidget {
-  const _ChatRoom();
+  final String familyId; final String userId; final String userName;
+  const _ChatRoom({required this.familyId, required this.userId, required this.userName});
+
   @override
   ConsumerState<_ChatRoom> createState() => _ChatRoomState();
 }
 
 class _ChatRoomState extends ConsumerState<_ChatRoom> {
   final TextEditingController _msgController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
+  bool _isComposing = false; // State untuk tombol Mic vs Send
+
+  void _handleSend() {
+    if (_msgController.text.trim().isEmpty) return;
+    ref.read(chatActionsProvider).sendTextMessage(
+      familyId: widget.familyId,
+      senderId: widget.userId,
+      senderName: widget.userName,
+      text: _msgController.text.trim()
+    );
+    _msgController.clear();
+    setState(() => _isComposing = false);
+  }
+
+  void _handleImage() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    if (picked != null) {
+      ref.read(chatActionsProvider).sendImageMessage(
+        familyId: widget.familyId, 
+        senderId: widget.userId, 
+        senderName: widget.userName, 
+        imageFile: File(picked.path)
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final asyncMessages = ref.watch(chatControllerProvider);
+    final asyncMessages = ref.watch(chatProvider(widget.familyId));
 
     return Scaffold(
       backgroundColor: AppColors.surface,
@@ -171,86 +183,82 @@ class _ChatRoomState extends ConsumerState<_ChatRoom> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => ref.read(isChatRoomActiveProvider.notifier).state = false,
         ),
-        title: const Row(
-          children: [
-            CircleAvatar(backgroundColor: AppColors.secondary, child: Icon(Icons.person, color: Colors.white)),
-            SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text("Grup Keluarga", style: TextStyle(fontSize: 18)),
-                Text("Anak, Cucu, Eyang", style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-              ],
-            ),
-          ],
-        ),
+        title: const Text("Grup Keluarga", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        backgroundColor: AppColors.surface,
+        elevation: 1,
       ),
       body: Column(
         children: [
-          // List Pesan
           Expanded(
             child: asyncMessages.when(
-              data: (messages) {
-                // Auto scroll ke bawah
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  if (_scrollController.hasClients) {
-                    _scrollController.animateTo(
-                      _scrollController.position.maxScrollExtent,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOut,
-                    );
-                  }
-                });
-
-                return ListView.builder(
-                  controller: _scrollController,
-                  padding: const EdgeInsets.all(16),
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    return _ChatBubble(message: messages[index]);
-                  },
-                );
-              },
+              data: (messages) => ListView.builder(
+                reverse: true, // Chat mulai dari bawah
+                padding: const EdgeInsets.all(16),
+                itemCount: messages.length,
+                itemBuilder: (context, index) {
+                  final msg = messages[index];
+                  return _ChatBubble(message: msg, isMe: msg.senderId == widget.userId);
+                },
+              ),
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text("Error: $e")),
             ),
           ),
-
-          // Input Bar (Besar & Jelas)
+          
+          // INPUT BAR
           Container(
-            padding: const EdgeInsets.all(16),
-            color: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, -2))]
+            ),
             child: SafeArea(
               child: Row(
                 children: [
+                  // Tombol Upload Gambar
+                  IconButton(
+                    icon: const Icon(Icons.add_photo_alternate, color: AppColors.primary),
+                    onPressed: _handleImage,
+                  ),
+                  
+                  // Text Field
                   Expanded(
-                    child: TextField(
-                      controller: _msgController,
-                      decoration: InputDecoration(
-                        hintText: "Ketik pesan...",
-                        filled: true,
-                        fillColor: AppColors.surface,
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(30), borderSide: BorderSide.none),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: TextField(
+                        controller: _msgController,
+                        onChanged: (text) {
+                          setState(() {
+                            _isComposing = text.trim().isNotEmpty;
+                          });
+                        },
+                        decoration: const InputDecoration(
+                          hintText: "Ketik pesan...",
+                          border: InputBorder.none,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  // Tombol Kirim / Mic
+                  
+                  const SizedBox(width: 8),
+
+                  // Tombol Send / Mic
                   FloatingActionButton(
-                    onPressed: () {
-                      if (_msgController.text.isNotEmpty) {
-                        ref.read(chatControllerProvider.notifier).sendMessage(_msgController.text);
-                        _msgController.clear();
-                      } else {
-                         ScaffoldMessenger.of(context).showSnackBar(
-                           const SnackBar(content: Text("Tekan dan tahan untuk Pesan Suara (Demo)")),
-                         );
-                      }
-                    },
+                    heroTag: "fab_send_chat",
+                    mini: true,
+                    elevation: 0,
                     backgroundColor: AppColors.primary,
-                    elevation: 2,
-                    child: const Icon(Icons.mic, color: Colors.white), // Default Mic Icon (Priority)
+                    foregroundColor: Colors.white,
+                    onPressed: _isComposing 
+                      ? _handleSend 
+                      : () {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Fitur Pesan Suara (Coming Soon)")));
+                        },
+                    child: Icon(_isComposing ? Icons.send : Icons.mic),
                   ),
                 ],
               ),
@@ -264,17 +272,17 @@ class _ChatRoomState extends ConsumerState<_ChatRoom> {
 
 class _ChatBubble extends StatelessWidget {
   final ChatMessage message;
-  const _ChatBubble({required this.message});
+  final bool isMe;
+  const _ChatBubble({required this.message, required this.isMe});
 
   @override
   Widget build(BuildContext context) {
-    final isMe = message.isMe;
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
+        margin: const EdgeInsets.only(bottom: 12),
         constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: isMe ? AppColors.primary : Colors.white,
           borderRadius: BorderRadius.only(
@@ -283,15 +291,22 @@ class _ChatBubble extends StatelessWidget {
             bottomLeft: isMe ? const Radius.circular(20) : Radius.zero,
             bottomRight: isMe ? Radius.zero : const Radius.circular(20),
           ),
-          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, 2))],
+          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 1))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Jika ada konteks (misal: "Laporan Obat"), tampilkan badge kecil
+            // Nama Pengirim (Jika bukan saya)
+            if (!isMe)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(message.senderName, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.primary)),
+              ),
+
+            // Konteks (Badge)
             if (message.contextData != null)
               Container(
-                margin: const EdgeInsets.only(bottom: 8),
+                margin: const EdgeInsets.only(bottom: 6),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: isMe ? Colors.black12 : AppColors.surface,
@@ -302,26 +317,42 @@ class _ChatBubble extends StatelessWidget {
                   children: [
                     Icon(Icons.link, size: 12, color: isMe ? Colors.white70 : AppColors.textSecondary),
                     const SizedBox(width: 4),
-                    Text(
-                      message.contextData!,
-                      style: TextStyle(fontSize: 10, color: isMe ? Colors.white : AppColors.textSecondary),
-                    ),
+                    Text(message.contextData!, style: TextStyle(fontSize: 10, color: isMe ? Colors.white : AppColors.textSecondary)),
                   ],
                 ),
               ),
             
-            Text(
-              message.text,
-              style: TextStyle(
-                fontSize: 16,
-                height: 1.4,
-                color: isMe ? Colors.white : AppColors.textPrimary,
+            // Isi Pesan (Text vs Image)
+            if (message.type == ChatType.image)
+              GestureDetector(
+                onTap: () {
+                  // TODO: Buka full screen image
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.network(
+                    message.content, 
+                    width: 200, 
+                    fit: BoxFit.cover,
+                    loadingBuilder: (ctx, child, loading) => loading == null ? child : Container(height: 150, width: 200, color: Colors.black12, child: const Center(child: CircularProgressIndicator())),
+                  ),
+                ),
+              )
+            else
+              Text(
+                message.content,
+                style: TextStyle(fontSize: 16, color: isMe ? Colors.white : AppColors.textPrimary),
               ),
-            ),
+            
             const SizedBox(height: 4),
-            Text(
-              "${message.time.hour}:${message.time.minute.toString().padLeft(2, '0')}",
-              style: TextStyle(fontSize: 10, color: isMe ? Colors.white70 : AppColors.textSecondary),
+            
+            // Jam
+            Align(
+              alignment: Alignment.bottomRight,
+              child: Text(
+                "${message.timestamp.hour}:${message.timestamp.minute.toString().padLeft(2, '0')}",
+                style: TextStyle(fontSize: 10, color: isMe ? Colors.white70 : AppColors.textSecondary),
+              ),
             ),
           ],
         ),

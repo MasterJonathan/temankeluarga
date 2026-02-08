@@ -1,60 +1,81 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/medication_model.dart';
 
-// 1. Interface (Kontrak)
-abstract class MedicationRepository {
-  Future<List<MedicationTask>> getDailyTasks();
-  Future<void> markAsTaken(String id);
-}
+class MedicationRepository {
+  final FirebaseFirestore _firestore;
+  MedicationRepository(this._firestore);
 
-// 2. Mock Implementation (Data Palsu untuk UI Dev)
-class MockMedicationRepository implements MedicationRepository {
-  // Simulasi database lokal memori
-  final List<MedicationTask> _mockData = [
-    MedicationTask(
-      id: '1',
-      title: 'Obat Jantung (Amlodipine)',
-      description: '1 Tablet - Sesudah Makan',
-      time: '08:00',
-      imageUrl: 'https://via.placeholder.com/150/4B5320/FFFFFF?text=Obat', // Placeholder
-    ),
-    MedicationTask(
-      id: '2',
-      title: 'Vitamin D',
-      description: '1 Kapsul Lunak',
-      time: '08:00',
-      imageUrl: 'https://via.placeholder.com/150/F0C05A/4A3B32?text=Vit',
-    ),
-    MedicationTask(
-      id: '3',
-      title: 'Cek Tensi Darah',
-      description: 'Target: < 140/90',
-      time: '16:00',
-      imageUrl: 'https://via.placeholder.com/150/E07A5F/FFFFFF?text=Tensi',
-    ),
-  ];
-
-  @override
-  Future<List<MedicationTask>> getDailyTasks() async {
-    await Future.delayed(const Duration(milliseconds: 800)); // Simulasi loading
-    return _mockData;
+  // Helper untuk mendapatkan tanggal hari ini dalam format YYYY-MM-DD
+  String _getTodayDateString() {
+    final now = DateTime.now();
+    return "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
   }
 
-  @override
-  Future<void> markAsTaken(String id) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    // Di real app, ini update ke Firebase
-    final index = _mockData.indexWhere((e) => e.id == id);
-    if (index != -1) {
-      _mockData[index] = _mockData[index].copyWith(
-        isTaken: true,
-        takenAt: DateTime.now(),
-      );
+  String _getDateId(DateTime date) {
+    return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+  }
+
+
+  // 1. CREATE: Tambah Obat Baru (Guardian)
+  Future<void> addMedication(MedicationTask task) async {
+    final docRef = _firestore.collection('medications').doc();
+    // Set ID dari dokumen yang baru dibuat
+    final taskWithId = task.copyWith(id: docRef.id);
+    await docRef.set(taskWithId.toMap());
+  }
+
+  // 2. READ: Dapatkan semua obat untuk user + status hari ini (Realtime)
+  Stream<List<MedicationTask>> watchTasksByDate(String userId, DateTime date) {
+    final query = _firestore.collection('medications').where('userId', isEqualTo: userId);
+    
+    return query.snapshots().asyncMap((snapshot) async {
+      final tasksWithStatus = <MedicationTask>[];
+      final dateId = _getDateId(date); // Gunakan tanggal yang dipilih
+
+      for (final doc in snapshot.docs) {
+        // Cek logs untuk tanggal tersebut
+        final logDoc = await doc.reference.collection('logs').doc(dateId).get();
+        
+        final bool isTaken = logDoc.exists && logDoc.data()?['isTaken'] == true;
+        final DateTime? takenAt = logDoc.exists ? (logDoc.data()?['takenAt'] as Timestamp?)?.toDate() : null;
+
+        tasksWithStatus.add(MedicationTask.fromMap(doc.id, doc.data(), isTaken, takenAt));
+      }
+
+      tasksWithStatus.sort((a, b) => a.time.compareTo(b.time));
+      return tasksWithStatus;
+    });
+  }
+
+  // 3. UPDATE: Tandai Sudah/Belum Diminum (Lansia & Guardian)
+  Future<void> toggleTaskStatus(String medId, bool currentStatus) async {
+    final dateId = _getDateId(DateTime.now()); // Default Hari Ini
+    final logRef = _firestore.collection('medications').doc(medId).collection('logs').doc(dateId);
+
+    if (!currentStatus) {
+      await logRef.set({
+        'isTaken': true,
+        'takenAt': FieldValue.serverTimestamp(),
+      });
+    } else {
+      await logRef.delete();
     }
   }
+
+  // 4. UPDATE: Edit Detail Obat (Guardian)
+  Future<void> updateMedication(MedicationTask task) async {
+    await _firestore.collection('medications').doc(task.id).update(task.toMap());
+  }
+
+  // 5. DELETE: Hapus Obat (Guardian)
+  Future<void> deleteMedication(String medId) async {
+    await _firestore.collection('medications').doc(medId).delete();
+    // Note: Subcollection 'logs' akan otomatis terhapus (orphan)
+    // Untuk production app, perlu Cloud Function untuk membersihkannya.
+  }
 }
 
-// 3. Provider Repository
 final medicationRepositoryProvider = Provider<MedicationRepository>((ref) {
-  return MockMedicationRepository();
+  return MedicationRepository(FirebaseFirestore.instance);
 });
