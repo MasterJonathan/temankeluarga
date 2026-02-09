@@ -1,59 +1,57 @@
-import 'dart:math';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../domain/chat_model.dart';
 
 class ChatRepository {
-  // Database Chat Sementara
-  final List<ChatMessage> _messages = [
-    ChatMessage(
-      id: '1',
-      text: 'Bapak, nanti sore aku mampir ya bawakan buah.',
-      isMe: false, // Dari Anak
-      time: DateTime.now().subtract(const Duration(hours: 2)),
-    ),
-  ];
+  final FirebaseFirestore _firestore;
+  final FirebaseStorage _storage;
 
-  Future<List<ChatMessage>> getMessages() async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _messages;
+  ChatRepository(this._firestore, this._storage);
+
+  // 1. Kirim Pesan
+  Future<void> sendMessage(String familyId, ChatMessage message) async {
+    await _firestore
+        .collection('families')
+        .doc(familyId)
+        .collection('messages')
+        .add(message.toMap());
   }
 
-  Future<ChatMessage> sendMessage(String text, ChatContextType type, String? contextData) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    final newMessage = ChatMessage(
-      id: DateTime.now().toString(),
-      text: text,
-      isMe: true,
-      time: DateTime.now(),
-      contextType: type,
-      contextData: contextData,
-    );
-    
-    _messages.add(newMessage);
-    return newMessage;
-  }
-
-  // Simulasi Balasan Otomatis dari Anak
-  Future<ChatMessage> simulateReply(ChatContextType type) async {
-    await Future.delayed(const Duration(seconds: 2)); // Nunggu 2 detik seolah ngetik
-    
-    String replyText = "Oke pak, sehat selalu ya!";
-    if (type == ChatContextType.health) {
-      replyText = "Wah bagus pak! Dijaga terus ya minum obatnya.";
-    } else if (type == ChatContextType.memory) {
-      replyText = "Lucu banget fotonya pak! Itu kapan?";
+  // 2. Upload Gambar Chat
+  Future<String?> uploadChatImage(File imageFile, String familyId) async {
+    try {
+      final fileName = "${DateTime.now().millisecondsSinceEpoch}.jpg";
+      final ref = _storage.ref().child('families/$familyId/chat/$fileName');
+      await ref.putFile(imageFile);
+      return await ref.getDownloadURL();
+    } catch (e) {
+      debugPrint("Chat Upload Error: $e");
+      return null;
     }
+  }
 
-    final reply = ChatMessage(
-      id: DateTime.now().toString(),
-      text: replyText,
-      isMe: false,
-      time: DateTime.now(),
-    );
-    _messages.add(reply);
-    return reply;
+  // 3. Stream Pesan Realtime
+  Stream<List<ChatMessage>> watchMessages(String familyId) {
+    return _firestore
+        .collection('families')
+        .doc(familyId)
+        .collection('messages')
+        .orderBy(
+          'timestamp',
+          descending: true,
+        ) // Pesan baru di bawah (logic UI nanti di-reverse)
+        .snapshots()
+        .map((snapshot) {
+          return snapshot.docs.map((doc) {
+            return ChatMessage.fromMap(doc.id, doc.data());
+          }).toList();
+        });
   }
 }
 
-final chatRepositoryProvider = Provider((ref) => ChatRepository());
+final chatRepositoryProvider = Provider((ref) {
+  return ChatRepository(FirebaseFirestore.instance, FirebaseStorage.instance);
+});

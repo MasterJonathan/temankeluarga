@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
+
 import 'package:silver_guide/app/theme/app_theme.dart';
 import 'package:silver_guide/features/activities/presentation/activities_page.dart';
+
 import 'package:silver_guide/features/family_chat/presentation/family_chat_page.dart';
 import 'package:silver_guide/features/gallery/presentation/memories_page.dart';
+
 import 'package:silver_guide/features/medication/presentation/health_page.dart';
 import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
 import 'package:silver_guide/features/profile/presentation/settings_page.dart';
@@ -18,20 +20,20 @@ class MainNavigationScaffold extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = ref.watch(navIndexProvider);
-
     final asyncUser = ref.watch(profileControllerProvider);
+    final user = asyncUser.value;
 
     // List Halaman (Placeholder untuk saat ini)
     final List<Widget> pages = [
       const HealthPage(),
-      const ActivitiesPage(), 
+      const ActivitiesPage(),
       const MemoriesPage(),
       const FamilyChatPage(),
     ];
 
     // Judul Halaman berdasarkan Index
     final List<String> titles = [
-      "Selamat Pagi, Ayah", // Bisa dinamis nanti
+      "Silver Guide", // Bisa dinamis nanti
       "Aktivitas Hari Ini",
       "Kenangan Kita",
       "Ruang Keluarga",
@@ -42,27 +44,38 @@ class MainNavigationScaffold extends ConsumerWidget {
       appBar: AppBar(
         title: Text(titles[currentIndex]),
         actions: [
-          _buildSOSButton(context), 
+          _buildSOSButton(context),
           const SizedBox(width: 12),
           GestureDetector(
             onTap: () {
-              // Navigasi ke Settings Page
               Navigator.push(
-                context, 
-                MaterialPageRoute(builder: (context) => const SettingsPage())
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
               );
             },
             child: CircleAvatar(
               radius: 20,
               backgroundColor: Colors.grey[300],
-              backgroundImage: asyncUser != null 
-                ? NetworkImage(asyncUser.value!.photoUrl) 
-                : null, // Loading or Error
-              child: asyncUser.isLoading ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) : null,
+              // Logic: Jika user ada DAN photoUrl tidak kosong -> Pakai Foto User
+              // Jika tidak -> Pakai Placeholder
+              backgroundImage: (user != null && user.photoUrl.isNotEmpty)
+                  ? NetworkImage(user.photoUrl)
+                  : const NetworkImage(
+                      "https://cdn-icons-png.flaticon.com/256/149/149071.png",
+                    ),
+
+              // Tampilkan loading kecil jika data sedang diambil
+              child: asyncUser.isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : null,
             ),
           ),
           const SizedBox(width: 16),
-          ],
+        ],
       ),
 
       // 2. Body dengan IndexedStack (State Preservation)
@@ -134,27 +147,4 @@ class MainNavigationScaffold extends ConsumerWidget {
   }
 
   // Helper sementara untuk Placeholder
-  Widget _buildPlaceholder(String title, IconData icon) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 80, color: AppColors.primary.withOpacity(0.5)),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: AppTheme.lightTheme.textTheme.displayMedium,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Fitur ini akan segera dibangun.",
-            style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

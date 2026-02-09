@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -36,10 +33,7 @@ class DefaultFirebaseOptions {
           'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -59,4 +53,23 @@ class DefaultFirebaseOptions {
     projectId: 'silver-guide',
     storageBucket: 'silver-guide.firebasestorage.app',
   );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyBKaUBsxstmHL7-6D5hxaGyY_LZQkuUk4M',
+    appId: '1:389031362755:web:0a4c841547624337c52276',
+    messagingSenderId: '389031362755',
+    projectId: 'silver-guide',
+    authDomain: 'silver-guide.firebaseapp.com',
+    storageBucket: 'silver-guide.firebasestorage.app',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyBKaUBsxstmHL7-6D5hxaGyY_LZQkuUk4M',
+    appId: '1:389031362755:web:a04f01ad0a7232c6c52276',
+    messagingSenderId: '389031362755',
+    projectId: 'silver-guide',
+    authDomain: 'silver-guide.firebaseapp.com',
+    storageBucket: 'silver-guide.firebasestorage.app',
+  );
+
 }

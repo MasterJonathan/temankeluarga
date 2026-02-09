@@ -5,7 +5,12 @@ import 'package:silver_guide/main_navigation.dart';
 import 'package:silver_guide/features/authentication/presentation/login_page.dart';
 import 'package:silver_guide/features/authentication/presentation/auth_controller.dart';
 
-void main() {
+import 'package:firebase_core/firebase_core.dart';
+import 'package:silver_guide/firebase_options.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const ProviderScope(child: SilverGuideApp()));
 }
 
@@ -22,7 +27,13 @@ class SilverGuideApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       // Logic Routing Sederhana
-      home: isLoggedIn ? const MainNavigationScaffold() : const LoginPage(),
+      home: isLoggedIn.when(
+        data: (user) =>
+            user != null ? const MainNavigationScaffold() : const LoginPage(),
+        loading: () =>
+            const Scaffold(body: Center(child: CircularProgressIndicator())),
+        error: (e, st) => const LoginPage(),
+      ),
     );
   }
 }

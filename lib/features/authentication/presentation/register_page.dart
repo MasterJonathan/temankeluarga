@@ -88,16 +88,29 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
     setState(() => _isLoading = true);
 
-    // Simulasi Proses Register ke Backend via Controller
-    // Di real app, kita kirim data: email, pass, name, phone, role
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      // Panggil Controller dengan Data Lengkap
+      await ref
+          .read(authControllerProvider)
+          .register(
+            email: _emailController.text,
+            password: _passController.text,
+            name: _nameController.text,
+            phone: _phoneController.text,
+            roleStr: _selectedRole!, // 'elderly' atau 'guardian'
+          );
 
-    // Login otomatis setelah register
-    await ref.read(authControllerProvider).loginWithGoogle();
-
-    // Karena authController mengubah state 'isLoggedIn' jadi true,
-    // main.dart akan otomatis me-replace halaman ini dengan MainNavigationScaffold.
-    // Jadi kita tidak perlu Navigator.push di sini.
+      // Jika sukses, Auth State akan berubah jadi 'LoggedIn'
+      // Main.dart akan otomatis merubah halaman ke MainNavigationScaffold
+      // Kita perlu memastikan navigasi stack bersih
+      if (mounted) {
+        setState(() => _isLoading = false);
+        Navigator.of(context).popUntil((route) => route.isFirst);
+      }
+    } catch (e) {
+      _showError("Registrasi Gagal: ${e.toString()}");
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   void _showError(String message) {
@@ -418,7 +431,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withOpacity(0.05),
+            color: AppColors.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -470,7 +483,7 @@ class _RoleSelectionCard extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected ? color.withOpacity(0.1) : Colors.white,
+          color: isSelected ? color.withValues(alpha: 0.1) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected ? color : Colors.transparent,
@@ -478,7 +491,7 @@ class _RoleSelectionCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: AppColors.shadow.withOpacity(0.05),
+              color: AppColors.shadow.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

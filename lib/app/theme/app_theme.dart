@@ -68,7 +68,7 @@ class AppTheme {
           height: 1.5,
           color: AppColors.textPrimary,
         ),
-        labelLarge: GoogleFonts.openSans(
+        labelLarge: GoogleFonts.lora(
           // For Buttons
           fontSize: 16,
           fontWeight: FontWeight.bold,
@@ -92,16 +92,16 @@ class AppTheme {
       // Navigation Bar Theme (Bottom Bar)
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.surface,
-        indicatorColor: AppColors.secondary.withOpacity(0.3),
-        labelTextStyle: MaterialStateProperty.all(
-          GoogleFonts.beVietnamPro(
+        indicatorColor: AppColors.secondary.withValues(alpha: 0.3),
+        labelTextStyle: WidgetStateProperty.all(
+          GoogleFonts.lora(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,
           ),
         ),
-        iconTheme: MaterialStateProperty.resolveWith((states) {
-          if (states.contains(MaterialState.selected)) {
+        iconTheme: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) {
             return const IconThemeData(size: 30, color: AppColors.primary);
           }
           return const IconThemeData(size: 26, color: AppColors.textSecondary);

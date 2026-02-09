@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Untuk Copy Clipboard
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:silver_guide/app/theme/app_theme.dart';
-import 'package:silver_guide/features/profile/domain/user_model.dart';
 import 'package:silver_guide/features/authentication/presentation/auth_controller.dart';
-import 'profile_controller.dart';
+import 'package:silver_guide/features/profile/domain/user_model.dart';
+import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
+import 'package:silver_guide/widgets/edit_profile_sheet.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -26,64 +27,27 @@ class SettingsPage extends ConsumerWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Column(
             children: [
-              // 1. Profil Card (Header)
               _ProfileHeaderCard(user: user),
-
               const SizedBox(height: 24),
 
-              // 2. Bagian Khusus Guardian (Remote Control)
-              // Hanya "Switch Profile", tombol tambah obat dihapus
-              if (user.role == UserRole.guardian) ...[
-                const _SectionTitle(title: "MODE PENDAMPING"),
-                _GuardianControlCard(user: user),
-                const SizedBox(height: 24),
-              ],
-
-              // 3. Bagian Keluarga
+              // Bagian Keluarga
               const _SectionTitle(title: "KELUARGA"),
               _FamilyConnectionCard(user: user, ref: ref),
 
               const SizedBox(height: 24),
 
-              // 4. Pengaturan Umum
+              // Pengaturan Umum
               const _SectionTitle(title: "UMUM"),
               _GeneralSettingsCard(ref: ref),
 
               const SizedBox(height: 40),
 
-              // 5. Tombol Logout (Sekarang terlihat seperti tombol)
+              // Tombol Logout
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
                   onPressed: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: const Text("Keluar Akun"),
-                        content: const Text("Apakah Anda yakin ingin keluar?"),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text("Batal"),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              Navigator.pop(context); // Close Dialog
-                              ref.read(authControllerProvider).logout();
-                              if (context.mounted) {
-                                Navigator.of(
-                                  context,
-                                ).popUntil((route) => route.isFirst);
-                              }
-                            },
-                            child: const Text(
-                              "Ya, Keluar",
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
+                    _showLogoutDialog(context, ref);
                   },
                   style: OutlinedButton.styleFrom(
                     foregroundColor: Colors.red[700],
@@ -92,22 +56,13 @@ class SettingsPage extends ConsumerWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    backgroundColor: Colors.red.withOpacity(0.02),
+                    backgroundColor: Colors.red.withValues(alpha: 0.02),
                   ),
                   icon: const Icon(Icons.logout, size: 20),
                   label: const Text(
                     "Keluar Akun",
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-              Text(
-                "Versi 1.0.0 (Beta)",
-                style: TextStyle(
-                  color: AppColors.textSecondary.withOpacity(0.5),
-                  fontSize: 12,
                 ),
               ),
               const SizedBox(height: 40),
@@ -118,6 +73,34 @@ class SettingsPage extends ConsumerWidget {
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
         error: (err, _) => Center(child: Text("Error: $err")),
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Keluar Akun?"),
+        content: const Text(
+          "Anda harus login kembali untuk mengakses aplikasi.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Batal"),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await ref.read(authControllerProvider).logout();
+              if (context.mounted) {
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              }
+            },
+            child: const Text("Keluar", style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }
@@ -185,11 +168,8 @@ class _ProfileHeaderCard extends StatelessWidget {
               children: [
                 Text(
                   user.name,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    fontFamily: 'Playfair Display',
+                  style: AppTheme.lightTheme.textTheme.displayMedium?.copyWith(
+                    color: AppColors.surface,
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -199,7 +179,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -216,75 +196,17 @@ class _ProfileHeaderCard extends StatelessWidget {
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-// Card Khusus Guardian: "Switch Profil" (Tanpa Border Kuning, Tanpa Tombol Tambah)
-class _GuardianControlCard extends StatelessWidget {
-  final UserProfile user;
-  const _GuardianControlCard({required this.user});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        // Tanpa Border Kuning sesuai request
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+          IconButton(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (ctx) => EditProfileSheet(user: user),
+              );
+            },
+            icon: const Icon(Icons.edit, color: Colors.white),
           ),
         ],
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.supervised_user_circle,
-            color: AppColors.primary,
-            size: 24,
-          ),
-        ),
-        title: const Text(
-          "Sedang Memantau",
-          style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
-        ),
-        subtitle: const Text(
-          "Bapak Sutomo", // Nanti dinamis
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.black12),
-          ),
-          child: const Text(
-            "Ganti",
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-          ),
-        ),
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Fitur Ganti Profil (Simulasi)")),
-          );
-        },
       ),
     );
   }
@@ -298,7 +220,7 @@ class _FamilyConnectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool hasFamily = user.familyId != null;
+    bool hasFamily = user.familyId != null && user.familyId!.isNotEmpty;
 
     return Container(
       decoration: BoxDecoration(
@@ -306,7 +228,7 @@ class _FamilyConnectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withOpacity(0.05),
+            color: AppColors.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -345,28 +267,70 @@ class _FamilyConnectionCard extends StatelessWidget {
               ),
             )
           else
-            ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 8,
-              ),
-              leading: const Icon(
-                Icons.group_add_outlined,
-                color: AppColors.primary,
-              ),
-              title: const Text("Gabung Keluarga"),
-              subtitle: const Text("Masukkan kode undangan"),
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 14,
-                color: Colors.black26,
-              ),
-              onTap: () {
-                _showJoinDialog(context, ref);
-              },
+            Column(
+              children: [
+                ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  leading: const Icon(
+                    Icons.group_add_outlined,
+                    color: AppColors.primary,
+                  ),
+                  title: const Text("Gabung Keluarga"),
+                  subtitle: const Text("Masukkan kode undangan"),
+                  trailing: const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 14,
+                    color: Colors.black26,
+                  ),
+                  onTap: () => _showJoinDialog(context, ref),
+                ),
+                if (user.role == UserRole.guardian) ...[
+                  const Divider(height: 2, color: AppColors.surface),
+                  ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 8,
+                    ),
+                    leading: const Icon(
+                      Icons.add_home_work_outlined,
+                      color: AppColors.accent,
+                    ),
+                    title: const Text("Buat Keluarga Baru"),
+                    subtitle: const Text("Dapatkan kode untuk dibagikan"),
+                    trailing: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 14,
+                      color: Colors.black26,
+                    ),
+                    onTap: () async {
+                      try {
+                        await ref
+                            .read(profileControllerProvider.notifier)
+                            .createFamily();
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Keluarga berhasil dibuat!"),
+                          ),
+                        );
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Gagal: $e"),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ],
             ),
 
-          // Divider sesuai request (Warna Surface)
           const Divider(height: 2, color: AppColors.surface),
 
           ListTile(
@@ -380,13 +344,8 @@ class _FamilyConnectionCard extends StatelessWidget {
             ),
             title: const Text("Anggota Keluarga"),
             subtitle: Text(
-              hasFamily ? "3 Anggota terhubung" : "Belum ada",
+              hasFamily ? "Terhubung" : "Belum ada",
               style: const TextStyle(fontSize: 13),
-            ),
-            trailing: const Icon(
-              Icons.arrow_forward_ios,
-              size: 14,
-              color: Colors.black26,
             ),
           ),
         ],
@@ -404,8 +363,9 @@ class _FamilyConnectionCard extends StatelessWidget {
         title: const Text("Gabung Keluarga"),
         content: TextField(
           controller: controller,
+          textCapitalization: TextCapitalization.characters,
           decoration: InputDecoration(
-            hintText: "Contoh: KEL-8899",
+            hintText: "Contoh: ABC1234",
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
@@ -427,11 +387,25 @@ class _FamilyConnectionCard extends StatelessWidget {
               backgroundColor: AppColors.primary,
               foregroundColor: Colors.white,
             ),
-            onPressed: () {
-              ref
-                  .read(profileControllerProvider.notifier)
-                  .joinFamily(controller.text);
-              Navigator.pop(ctx);
+            onPressed: () async {
+              try {
+                await ref
+                    .read(profileControllerProvider.notifier)
+                    .joinFamily(controller.text);
+                if (ctx.mounted) Navigator.pop(ctx);
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Berhasil bergabung!")),
+                );
+              } catch (e) {
+                if (!context.mounted) return;
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text("Gagal: $e"),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             child: const Text("Gabung"),
           ),
@@ -453,7 +427,7 @@ class _GeneralSettingsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withOpacity(0.05),
+            color: AppColors.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -461,41 +435,6 @@ class _GeneralSettingsCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // DEMO ONLY: Switch Role
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 6,
-            ),
-            leading: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.purple.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.switch_account,
-                color: Colors.purple,
-                size: 20,
-              ),
-            ),
-            title: const Text("Ganti Peran [Demo]"),
-            subtitle: const Text(
-              "Simulasi switch Lansia <-> Guardian",
-              style: TextStyle(fontSize: 12),
-            ),
-            onTap: () {
-              ref.read(profileControllerProvider.notifier).toggleRoleForDemo();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text("Role Berubah! Cek Header Profil."),
-                ),
-              );
-            },
-          ),
-
-          const Divider(height: 2, color: AppColors.surface),
-
           ListTile(
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 20,
@@ -509,13 +448,12 @@ class _GeneralSettingsCard extends StatelessWidget {
             trailing: Switch(
               value: true,
               onChanged: (v) {},
-              activeColor: AppColors.primary,
-              trackOutlineColor: MaterialStateProperty.all(Colors.transparent),
+              // used activeTrackColor as approx or thumbColor
+              activeTrackColor: AppColors.primary,
+              trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
             ),
           ),
-
           const Divider(height: 2, color: AppColors.surface),
-
           const ListTile(
             contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 6),
             leading: Icon(Icons.text_fields, color: AppColors.textSecondary),
