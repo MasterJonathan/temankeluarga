@@ -5,8 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:silver_guide/features/profile/domain/user_model.dart';
 
-final firebaseAuthProvider = Provider<FirebaseAuth>((ref) => FirebaseAuth.instance);
-final firestoreProvider = Provider<FirebaseFirestore>((ref) => FirebaseFirestore.instance);
+final firebaseAuthProvider = Provider<FirebaseAuth>(
+  (ref) => FirebaseAuth.instance,
+);
+final firestoreProvider = Provider<FirebaseFirestore>(
+  (ref) => FirebaseFirestore.instance,
+);
 
 final authStateProvider = StreamProvider<User?>((ref) {
   return ref.watch(firebaseAuthProvider).authStateChanges();
@@ -14,10 +18,10 @@ final authStateProvider = StreamProvider<User?>((ref) {
 
 class AuthController {
   final Ref ref;
-  
+
   // 1. Singleton Instance (Sesuai Dokumen v7)
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
-  
+
   static bool _isInitialized = false;
 
   AuthController(this.ref);
@@ -34,17 +38,11 @@ class AuthController {
     try {
       await _ensureInitialized();
 
-      // 3. Authenticate: Mendapatkan Identitas User (Sesuai Dokumen v7)
-      // Menggunakan authenticate() jika didukung (Android support ini)
-      final bool canAuthenticate = await _googleSignIn.supportsAuthenticate();
-      if (!canAuthenticate) {
-        throw Exception("Platform tidak mendukung autentikasi Google Sign In v7");
-      }
+      // 3. Sign In (v7 uses authenticate())
+      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
 
-      final GoogleSignInAccount? googleUser = await _googleSignIn.authenticate();
-
-      // Jika user membatalkan (klik area luar / back)
-      if (googleUser == null) return;
+      // Note: If cancelled, it throws GoogleSignInException (handled below).
+      // So no null check needed for googleUser if return type is non-nullable.
 
       // ---------------------------------------------------------
       // PERUBAHAN UTAMA V7 DI SINI
@@ -52,13 +50,14 @@ class AuthController {
 
       // 4. Ambil ID Token dari 'authentication'
       // Objek ini di v7 HANYA punya idToken, TIDAK ADA accessToken.
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
       // 5. Ambil Access Token dari 'authorizationClient'
       // Kita harus request authorization untuk scope dasar ('email') agar dapat accessToken.
       // Sesuai dokumentasi: "authorizationForScopes returns an access token..."
-      final GoogleSignInClientAuthorization? googleAuthZ = 
-          await googleUser.authorizationClient.authorizationForScopes(['email', 'profile']);
+      final GoogleSignInClientAuthorization? googleAuthZ = await googleUser
+          .authorizationClient
+          .authorizationForScopes(['email', 'profile']);
 
       if (googleAuthZ == null) {
         throw Exception("Gagal mendapatkan otorisasi token Google.");
@@ -68,20 +67,21 @@ class AuthController {
       // Firebase butuh idToken (Identity) dan accessToken (Authorization)
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuthZ.accessToken, // Dari AuthorizationClient
-        idToken: googleAuth.idToken,          // Dari Authentication
+        idToken: googleAuth.idToken, // Dari Authentication
       );
 
       // ---------------------------------------------------------
 
       // 7. Sign In ke Firebase Auth
-      final userCred = await ref.read(firebaseAuthProvider).signInWithCredential(credential);
+      final userCred = await ref
+          .read(firebaseAuthProvider)
+          .signInWithCredential(credential);
       final user = userCred.user;
 
       // 8. Logic Firestore (Buat Profil Jika Baru)
       if (user != null) {
         await _createProfileIfNew(user);
       }
-
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) return;
       throw Exception("Google Sign In Error (${e.code}): ${e.details}");
@@ -92,16 +92,19 @@ class AuthController {
 
   // Helper: Logic Buat Profil Firestore
   Future<void> _createProfileIfNew(User user) async {
-    final docRef = ref.read(firestoreProvider).collection('users').doc(user.uid);
+    final docRef = ref
+        .read(firestoreProvider)
+        .collection('users')
+        .doc(user.uid);
     final doc = await docRef.get();
-    
+
     if (!doc.exists) {
       final newUser = UserProfile(
         id: user.uid,
         name: user.displayName ?? "User Baru",
         email: user.email ?? "",
         photoUrl: user.photoURL ?? "https://ui-avatars.com/api/?name=User",
-        role: UserRole.elderly, 
+        role: UserRole.elderly,
         createdAt: DateTime.now(),
       );
       await docRef.set(newUser.toMap());
@@ -131,7 +134,8 @@ class AuthController {
       id: uid,
       name: name,
       email: email,
-      photoUrl: "https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=random",
+      photoUrl:
+          "https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=random",
       role: roleStr == 'guardian' ? UserRole.guardian : UserRole.elderly,
       phone: phone,
       createdAt: DateTime.now(),
@@ -142,13 +146,12 @@ class AuthController {
 
   // --- LOGIN EMAIL ---
   Future<void> login(String email, String password) async {
-    await ref.read(firebaseAuthProvider).signInWithEmailAndPassword(
-      email: email.trim(), 
-      password: password
-    );
+    await ref
+        .read(firebaseAuthProvider)
+        .signInWithEmailAndPassword(email: email.trim(), password: password);
   }
 
-// --- PERBAIKAN LOGOUT ---
+  // --- PERBAIKAN LOGOUT ---
   Future<void> logout() async {
     try {
       // Pastikan Google Sign In sudah init sebelum sign out
@@ -157,7 +160,7 @@ class AuthController {
     } catch (_) {
       // Abaikan error jika user tidak login via google
     }
-    
+
     // Logout Firebase
     await ref.read(firebaseAuthProvider).signOut();
   }

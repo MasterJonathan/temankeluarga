@@ -5,9 +5,6 @@ import 'package:silver_guide/features/authentication/presentation/auth_controlle
 import '../domain/user_model.dart';
 import '../data/profile_repository.dart';
 
-// IMPORT WAJIB:
-import 'package:silver_guide/features/profile/presentation/guardian_state.dart';
-
 class ProfileController extends StreamNotifier<UserProfile> {
   @override
   Stream<UserProfile> build() {
@@ -22,7 +19,7 @@ class ProfileController extends StreamNotifier<UserProfile> {
       loading: () => const Stream.empty(),
     );
   }
-  
+
   Future<void> joinFamily(String code) async {
     final repo = ref.read(profileRepositoryProvider);
     await repo.joinFamily(code.toUpperCase().trim());
@@ -36,7 +33,7 @@ class ProfileController extends StreamNotifier<UserProfile> {
   Future<void> updateProfile(String name, String phone) async {
     final user = state.value;
     if (user == null) return;
-    
+
     final repo = ref.read(profileRepositoryProvider);
     await repo.updateProfile(uid: user.id, name: name, phone: phone);
   }
@@ -60,6 +57,7 @@ final familyMembersProvider = FutureProvider.autoDispose<List<UserProfile>>((
   return repo.getFamilyMembers(userProfile.familyId!);
 });
 
-final profileControllerProvider = 
-    StreamNotifierProvider<ProfileController, UserProfile>(() => ProfileController());
-
+final profileControllerProvider =
+    StreamNotifierProvider<ProfileController, UserProfile>(
+      () => ProfileController(),
+    );

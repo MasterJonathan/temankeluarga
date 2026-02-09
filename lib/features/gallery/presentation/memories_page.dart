@@ -32,7 +32,9 @@ class MemoriesPage extends ConsumerWidget {
         onPressed: () {
           if (familyId.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Silakan gabung keluarga di Settings dulu.")),
+              const SnackBar(
+                content: Text("Silakan gabung keluarga di Settings dulu."),
+              ),
             );
             return;
           }
@@ -47,12 +49,15 @@ class MemoriesPage extends ConsumerWidget {
       body: asyncMemories.when(
         data: (memories) {
           if (memories.isEmpty) {
-             return Center(
-               child: Text("Belum ada kenangan.\nTulis cerita pertamamu!", 
-                 textAlign: TextAlign.center,
-                 style: TextStyle(color: AppColors.textSecondary.withOpacity(0.5)),
-               ),
-             );
+            return Center(
+              child: Text(
+                "Belum ada kenangan.\nTulis cerita pertamamu!",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppColors.textSecondary.withValues(alpha: 0.5),
+                ),
+              ),
+            );
           }
 
           // Grouping berdasarkan tanggal
@@ -75,9 +80,10 @@ class MemoriesPage extends ConsumerWidget {
                     String dateKey = grouped.keys.elementAt(index);
                     List<MemoryPost> dailyPosts = grouped[dateKey]!;
                     return _DailyGroupItem(
-                      dateKey: dateKey, 
+                      dateKey: dateKey,
                       posts: dailyPosts,
-                      currentUserId: currentUserId, // Kirim ID untuk cek status like
+                      currentUserId:
+                          currentUserId, // Kirim ID untuk cek status like
                     );
                   }, childCount: grouped.keys.length),
                 ),
@@ -96,7 +102,12 @@ class MemoriesPage extends ConsumerWidget {
   }
 
   // --- LOGIC DIALOG INPUT JURNAL (Updated with Firebase Logic) ---
-  void _showWriteDiaryDialog(BuildContext context, WidgetRef ref, String familyId, dynamic userProfile) {
+  void _showWriteDiaryDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String familyId,
+    dynamic userProfile,
+  ) {
     final textController = TextEditingController();
     File? selectedImage; // State Lokal untuk gambar
     bool isUploading = false; // State Loading
@@ -132,7 +143,11 @@ class MemoriesPage extends ConsumerWidget {
                         style: AppTheme.lightTheme.textTheme.titleLarge,
                       ),
                       if (isUploading)
-                        const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                        const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       else
                         IconButton(
                           onPressed: () => Navigator.pop(ctx),
@@ -161,7 +176,7 @@ class MemoriesPage extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  
+
                   // PREVIEW GAMBAR JIKA ADA
                   if (selectedImage != null) ...[
                     const SizedBox(height: 12),
@@ -169,15 +184,25 @@ class MemoriesPage extends ConsumerWidget {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          child: Image.file(selectedImage!, height: 100, width: double.infinity, fit: BoxFit.cover),
+                          child: Image.file(
+                            selectedImage!,
+                            height: 100,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
                         ),
                         Positioned(
-                          right: 8, top: 8,
+                          right: 8,
+                          top: 8,
                           child: GestureDetector(
                             onTap: () => setState(() => selectedImage = null),
-                            child: const CircleAvatar(radius: 12, backgroundColor: Colors.white, child: Icon(Icons.close, size: 16)),
+                            child: const CircleAvatar(
+                              radius: 12,
+                              backgroundColor: Colors.white,
+                              child: Icon(Icons.close, size: 16),
+                            ),
                           ),
-                        )
+                        ),
                       ],
                     ),
                   ],
@@ -187,15 +212,20 @@ class MemoriesPage extends ConsumerWidget {
                     children: [
                       // TOMBOL AMBIL FOTO
                       TextButton.icon(
-                        onPressed: isUploading ? null : () async {
-                          final picker = ImagePicker();
-                          final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
-                          if (picked != null) {
-                            setState(() {
-                              selectedImage = File(picked.path);
-                            });
-                          }
-                        },
+                        onPressed: isUploading
+                            ? null
+                            : () async {
+                                final picker = ImagePicker();
+                                final picked = await picker.pickImage(
+                                  source: ImageSource.gallery,
+                                  imageQuality: 70,
+                                );
+                                if (picked != null) {
+                                  setState(() {
+                                    selectedImage = File(picked.path);
+                                  });
+                                }
+                              },
                         style: TextButton.styleFrom(
                           foregroundColor: AppColors.primary,
                         ),
@@ -205,26 +235,35 @@ class MemoriesPage extends ConsumerWidget {
                       const Spacer(),
                       // TOMBOL SIMPAN KE FIREBASE
                       ElevatedButton(
-                        onPressed: isUploading ? null : () async {
-                          if (textController.text.isNotEmpty || selectedImage != null) {
-                            setState(() => isUploading = true);
-                            
-                            try {
-                              // Panggil Action Provider
-                              await ref.read(memoryActionsProvider).postMemory(
-                                familyId: familyId,
-                                authorId: userProfile.id,
-                                authorName: userProfile.name,
-                                content: textController.text,
-                                imageFile: selectedImage,
-                              );
-                              if (ctx.mounted) Navigator.pop(ctx);
-                            } catch (e) {
-                              setState(() => isUploading = false);
-                              ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(content: Text("Gagal: $e")));
-                            }
-                          }
-                        },
+                        onPressed: isUploading
+                            ? null
+                            : () async {
+                                if (textController.text.isNotEmpty ||
+                                    selectedImage != null) {
+                                  setState(() => isUploading = true);
+
+                                  try {
+                                    // Panggil Action Provider
+                                    await ref
+                                        .read(memoryActionsProvider)
+                                        .postMemory(
+                                          familyId: familyId,
+                                          authorId: userProfile.id,
+                                          authorName: userProfile.name,
+                                          content: textController.text,
+                                          imageFile: selectedImage,
+                                        );
+                                    if (ctx.mounted) Navigator.pop(ctx);
+                                  } catch (e) {
+                                    setState(() => isUploading = false);
+                                    if (ctx.mounted) {
+                                      ScaffoldMessenger.of(ctx).showSnackBar(
+                                        SnackBar(content: Text("Gagal: $e")),
+                                      );
+                                    }
+                                  }
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
@@ -247,13 +286,26 @@ class MemoriesPage extends ConsumerWidget {
               ),
             ),
           );
-        }
+        },
       ),
     );
   }
 
   String _getMonthName(int month) {
-    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Ags", "Sep", "Okt", "Nov", "Des"];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "Mei",
+      "Jun",
+      "Jul",
+      "Ags",
+      "Sep",
+      "Okt",
+      "Nov",
+      "Des",
+    ];
     return months[month - 1];
   }
 }
@@ -265,7 +317,7 @@ class _DailyGroupItem extends StatelessWidget {
   final String currentUserId; // Tambahan
 
   const _DailyGroupItem({
-    required this.dateKey, 
+    required this.dateKey,
     required this.posts,
     required this.currentUserId,
   });
@@ -286,17 +338,25 @@ class _DailyGroupItem extends StatelessWidget {
                 const SizedBox(height: 20),
                 Text(
                   parts[0],
-                  style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
                 Text(
                   parts[1].toUpperCase(),
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textSecondary,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Expanded(
                   child: Container(
                     width: 1.5,
-                    color: AppColors.textSecondary.withOpacity(0.3),
+                    color: AppColors.textSecondary.withValues(alpha: 0.3),
                   ),
                 ),
               ],
@@ -307,7 +367,12 @@ class _DailyGroupItem extends StatelessWidget {
           Expanded(
             child: Column(
               children: posts
-                  .map((post) => _DiaryPostItem(post: post, currentUserId: currentUserId))
+                  .map(
+                    (post) => _DiaryPostItem(
+                      post: post,
+                      currentUserId: currentUserId,
+                    ),
+                  )
                   .toList(),
             ),
           ),
@@ -346,7 +411,7 @@ class _DiaryPostItem extends ConsumerWidget {
                 Icon(
                   Icons.access_time,
                   size: 14,
-                  color: AppColors.textSecondary.withOpacity(0.7),
+                  color: AppColors.textSecondary.withValues(alpha: 0.7),
                 ),
                 const SizedBox(width: 4),
                 Text(
@@ -354,7 +419,7 @@ class _DiaryPostItem extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textSecondary.withOpacity(0.8),
+                    color: AppColors.textSecondary.withValues(alpha: 0.8),
                     fontFamily: 'Lora',
                   ),
                 ),
@@ -381,7 +446,7 @@ class _DiaryPostItem extends ConsumerWidget {
                 post.imageUrl!,
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (ctx, _, __) => Container(
+                errorBuilder: (ctx, error, stackTrace) => Container(
                   height: 150,
                   color: Colors.grey[200],
                   child: const Center(
@@ -399,7 +464,8 @@ class _DiaryPostItem extends ConsumerWidget {
             children: [
               InkWell(
                 borderRadius: BorderRadius.circular(20),
-                onTap: () => _showReactionPicker(context, ref, post.id, post.familyId),
+                onTap: () =>
+                    _showReactionPicker(context, ref, post.id, post.familyId),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 12,
@@ -407,13 +473,13 @@ class _DiaryPostItem extends ConsumerWidget {
                   ),
                   decoration: BoxDecoration(
                     color: myReactionEmoji != null
-                        ? AppColors.secondary.withOpacity(0.2)
+                        ? AppColors.secondary.withValues(alpha: 0.2)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: myReactionEmoji != null
                           ? AppColors.secondary
-                          : AppColors.textSecondary.withOpacity(0.2),
+                          : AppColors.textSecondary.withValues(alpha: 0.2),
                     ),
                   ),
                   child: Row(
@@ -443,7 +509,7 @@ class _DiaryPostItem extends ConsumerWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              
+
               // TAMPILKAN JUMLAH REAKSI
               if (post.reactions.isNotEmpty)
                 ..._buildReactionCounts(post.reactions),
@@ -462,29 +528,35 @@ class _DiaryPostItem extends ConsumerWidget {
       counts[emoji] = (counts[emoji] ?? 0) + 1;
     }
 
-    return counts.entries.map((e) => Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 8,
-          vertical: 4,
-        ),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Text(
-          "${e.key} ${e.value}",
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
+    return counts.entries
+        .map(
+          (e) => Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                "${e.key} ${e.value}",
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
-    )).toList();
+        )
+        .toList();
   }
 
-  void _showReactionPicker(BuildContext context, WidgetRef ref, String postId, String familyId) {
+  void _showReactionPicker(
+    BuildContext context,
+    WidgetRef ref,
+    String postId,
+    String familyId,
+  ) {
     final emojis = ["❤️", "😂", "🙏", "😢", "👍", "🔥"];
 
     showModalBottomSheet(
@@ -505,12 +577,9 @@ class _DiaryPostItem extends ConsumerWidget {
                 (emoji) => GestureDetector(
                   onTap: () {
                     // Panggil Action Provider
-                    ref.read(memoryActionsProvider).reactToPost(
-                      familyId,
-                      postId, 
-                      currentUserId, 
-                      emoji
-                    );
+                    ref
+                        .read(memoryActionsProvider)
+                        .reactToPost(familyId, postId, currentUserId, emoji);
                     Navigator.pop(ctx);
                   },
                   child: Text(emoji, style: const TextStyle(fontSize: 32)),

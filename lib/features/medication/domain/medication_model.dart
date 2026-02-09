@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class MedicationTask {
   final String id;
   final String userId;
@@ -32,7 +30,12 @@ class MedicationTask {
     };
   }
 
-  factory MedicationTask.fromMap(String docId, Map<String, dynamic> map, bool isTaskTaken, DateTime? taskTakenAt) {
+  factory MedicationTask.fromMap(
+    String docId,
+    Map<String, dynamic> map,
+    bool isTaskTaken,
+    DateTime? taskTakenAt,
+  ) {
     return MedicationTask(
       id: docId, // Ambil ID dari dokumen, bukan field
       userId: map['userId'] ?? '',

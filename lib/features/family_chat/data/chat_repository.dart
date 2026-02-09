@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,7 +28,7 @@ class ChatRepository {
       await ref.putFile(imageFile);
       return await ref.getDownloadURL();
     } catch (e) {
-      print("Chat Upload Error: $e");
+      debugPrint("Chat Upload Error: $e");
       return null;
     }
   }
@@ -38,7 +39,10 @@ class ChatRepository {
         .collection('families')
         .doc(familyId)
         .collection('messages')
-        .orderBy('timestamp', descending: true) // Pesan baru di bawah (logic UI nanti di-reverse)
+        .orderBy(
+          'timestamp',
+          descending: true,
+        ) // Pesan baru di bawah (logic UI nanti di-reverse)
         .snapshots()
         .map((snapshot) {
           return snapshot.docs.map((doc) {

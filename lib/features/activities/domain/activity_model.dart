@@ -25,16 +25,23 @@ class ActivityItem {
   // Helper untuk mapping String ke IconData (Hardcode di Model/UI)
   static IconData getIconData(String key) {
     switch (key) {
-      case 'flower': return Icons.local_florist;
-      case 'book': return Icons.menu_book;
-      case 'walk': return Icons.directions_walk;
-      case 'tea': return Icons.emoji_food_beverage;
-      case 'music': return Icons.music_note;
-      case 'pet': return Icons.pets;
-      default: return Icons.star;
+      case 'flower':
+        return Icons.local_florist;
+      case 'book':
+        return Icons.menu_book;
+      case 'walk':
+        return Icons.directions_walk;
+      case 'tea':
+        return Icons.emoji_food_beverage;
+      case 'music':
+        return Icons.music_note;
+      case 'pet':
+        return Icons.pets;
+      default:
+        return Icons.star;
     }
   }
-  
+
   IconData get icon => getIconData(iconKey);
 
   // --- SERIALIZATION ---
@@ -48,7 +55,11 @@ class ActivityItem {
     };
   }
 
-  factory ActivityItem.fromMap(String docId, Map<String, dynamic> map, bool isCompleted) {
+  factory ActivityItem.fromMap(
+    String docId,
+    Map<String, dynamic> map,
+    bool isCompleted,
+  ) {
     return ActivityItem(
       id: docId,
       userId: map['userId'] ?? '',

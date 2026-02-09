@@ -19,8 +19,7 @@ class ActivitiesPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      floatingActionButton: 
-      currentUserAsync.when(
+      floatingActionButton: currentUserAsync.when(
         data: (user) {
           // LOGIC STRICT: Hanya Guardian yang sedang memantau profil spesifik
           if (user.role == UserRole.guardian && activeProfileId != null) {
@@ -43,9 +42,9 @@ class ActivitiesPage extends ConsumerWidget {
           return null;
         },
         loading: () => null,
-        error: (_, __) => null,
+        error: (_, _) => null,
       ),
-      
+
       body: currentUserAsync.when(
         data: (user) {
           if (user.role == UserRole.guardian && activeProfileId == null) {
@@ -57,7 +56,7 @@ class ActivitiesPage extends ConsumerWidget {
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => const SizedBox(),
+        error: (_, _) => const SizedBox(),
       ),
     );
   }
@@ -76,8 +75,9 @@ class _GuardianActivityDashboard extends ConsumerWidget {
         final elderlyMembers = members
             .where((m) => m.role == UserRole.elderly)
             .toList();
-        if (elderlyMembers.isEmpty)
+        if (elderlyMembers.isEmpty) {
           return const Center(child: Text("Belum ada lansia."));
+        }
 
         return ListView(
           padding: const EdgeInsets.all(20),
@@ -99,7 +99,7 @@ class _GuardianActivityDashboard extends ConsumerWidget {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => const SizedBox(),
+      error: (_, _) => const SizedBox(),
     );
   }
 }
@@ -310,7 +310,9 @@ class _ActivityCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: isDone ? item.color.withOpacity(0.4) : Colors.black12,
+              color: isDone
+                  ? item.color.withValues(alpha: 0.4)
+                  : Colors.black12,
               blurRadius: isDone ? 16 : 8,
               offset: Offset(0, isDone ? 8 : 4),
             ),
@@ -324,8 +326,8 @@ class _ActivityCard extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: isDone
-                    ? Colors.white.withOpacity(0.2)
-                    : item.color.withOpacity(0.1),
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : item.color.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -369,7 +371,7 @@ class _FamilyTreeHeader extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.primary.withOpacity(0.1),
+        color: AppColors.primary.withValues(alpha: 0.1),
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
       ),
       child: SafeArea(

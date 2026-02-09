@@ -3,10 +3,7 @@ import 'package:flutter/services.dart'; // Untuk Copy Clipboard
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:silver_guide/app/theme/app_theme.dart';
 import 'package:silver_guide/features/authentication/presentation/auth_controller.dart';
-import 'package:silver_guide/features/medication/presentation/medication_provider.dart';
-import 'package:silver_guide/features/profile/data/profile_repository.dart';
 import 'package:silver_guide/features/profile/domain/user_model.dart';
-import 'package:silver_guide/features/profile/presentation/guardian_state.dart';
 import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
 import 'package:silver_guide/widgets/edit_profile_sheet.dart';
 
@@ -59,7 +56,7 @@ class SettingsPage extends ConsumerWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    backgroundColor: Colors.red.withOpacity(0.02),
+                    backgroundColor: Colors.red.withValues(alpha: 0.02),
                   ),
                   icon: const Icon(Icons.logout, size: 20),
                   label: const Text(
@@ -97,8 +94,9 @@ class SettingsPage extends ConsumerWidget {
             onPressed: () async {
               Navigator.pop(ctx);
               await ref.read(authControllerProvider).logout();
-              if (context.mounted)
+              if (context.mounted) {
                 Navigator.of(context).popUntil((route) => route.isFirst);
+              }
             },
             child: const Text("Keluar", style: TextStyle(color: Colors.red)),
           ),
@@ -181,7 +179,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
@@ -230,7 +228,7 @@ class _FamilyConnectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withOpacity(0.05),
+            color: AppColors.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -312,12 +310,14 @@ class _FamilyConnectionCard extends StatelessWidget {
                         await ref
                             .read(profileControllerProvider.notifier)
                             .createFamily();
+                        if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text("Keluarga berhasil dibuat!"),
                           ),
                         );
                       } catch (e) {
+                        if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text("Gagal: $e"),
@@ -393,10 +393,12 @@ class _FamilyConnectionCard extends StatelessWidget {
                     .read(profileControllerProvider.notifier)
                     .joinFamily(controller.text);
                 if (ctx.mounted) Navigator.pop(ctx);
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text("Berhasil bergabung!")),
                 );
               } catch (e) {
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text("Gagal: $e"),
@@ -425,7 +427,7 @@ class _GeneralSettingsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withOpacity(0.05),
+            color: AppColors.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -446,8 +448,9 @@ class _GeneralSettingsCard extends StatelessWidget {
             trailing: Switch(
               value: true,
               onChanged: (v) {},
-              activeColor: AppColors.primary,
-              trackOutlineColor: MaterialStateProperty.all(Colors.transparent),
+              // used activeTrackColor as approx or thumbColor
+              activeTrackColor: AppColors.primary,
+              trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
             ),
           ),
           const Divider(height: 2, color: AppColors.surface),

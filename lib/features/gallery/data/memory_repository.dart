@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,12 +15,14 @@ class MemoryRepository {
   Future<String?> uploadImage(File imageFile, String familyId) async {
     try {
       final fileName = DateTime.now().millisecondsSinceEpoch.toString();
-      final ref = _storage.ref().child('families/$familyId/memories/$fileName.jpg');
-      
+      final ref = _storage.ref().child(
+        'families/$familyId/memories/$fileName.jpg',
+      );
+
       await ref.putFile(imageFile);
       return await ref.getDownloadURL();
     } catch (e) {
-      print("Upload Error: $e");
+      debugPrint("Upload Error: $e");
       return null;
     }
   }
@@ -47,10 +50,12 @@ class MemoryRepository {
   Future<void> reactToPost(String postId, String userId, String emoji) async {
     final docRef = _firestore.collection('memories').doc(postId);
     final doc = await docRef.get();
-    
+
     if (doc.exists) {
-      final currentReactions = Map<String, String>.from(doc.data()?['reactions'] ?? {});
-      
+      final currentReactions = Map<String, String>.from(
+        doc.data()?['reactions'] ?? {},
+      );
+
       // Jika user sudah bereaksi dengan emoji yg sama -> Hapus (Unlike)
       if (currentReactions[userId] == emoji) {
         currentReactions.remove(userId);

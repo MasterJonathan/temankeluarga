@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:silver_guide/app/theme/app_theme.dart';
 import 'package:silver_guide/features/medication/domain/medication_model.dart';
 import 'package:silver_guide/features/medication/presentation/medication_actions.dart';
-import 'package:silver_guide/features/medication/presentation/medication_provider.dart';
 
 class TimelineTaskItem extends ConsumerWidget {
   final MedicationTask task;
@@ -54,7 +53,7 @@ class TimelineTaskItem extends ConsumerWidget {
                       // Garis tetap Emas jika sukses, atau abu samar jika belum
                       color: task.isTaken
                           ? AppColors.primary
-                          : AppColors.textSecondary.withOpacity(0.2),
+                          : AppColors.textSecondary.withValues(alpha: 0.2),
                     ),
                   ),
                 ],
@@ -71,7 +70,7 @@ class TimelineTaskItem extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.shadow.withOpacity(0.1),
+                        color: AppColors.shadow.withValues(alpha: 0.1),
                         blurRadius: 15,
                         offset: const Offset(0, 8),
                       ),
@@ -94,9 +93,9 @@ class TimelineTaskItem extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(16),
                                 image: DecorationImage(
                                   image: NetworkImage(
-                                    hasImage 
-                                      ? task.imageUrl! 
-                                      : "https://cdn-icons-png.flaticon.com/256/883/883407.png", // Ikon obat default
+                                    hasImage
+                                        ? task.imageUrl!
+                                        : "https://cdn-icons-png.flaticon.com/256/883/883407.png", // Ikon obat default
                                   ),
                                   fit: BoxFit.cover,
                                 ),
@@ -166,7 +165,9 @@ class TimelineTaskItem extends ConsumerWidget {
                                   ? []
                                   : [
                                       BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.1,
+                                        ),
                                         blurRadius: 4,
                                         offset: const Offset(0, 2),
                                       ),

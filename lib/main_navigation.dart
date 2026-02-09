@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
+
 import 'package:silver_guide/app/theme/app_theme.dart';
 import 'package:silver_guide/features/activities/presentation/activities_page.dart';
-import 'package:silver_guide/features/activities/presentation/activity_provider.dart';
+
 import 'package:silver_guide/features/family_chat/presentation/family_chat_page.dart';
 import 'package:silver_guide/features/gallery/presentation/memories_page.dart';
-import 'package:silver_guide/features/gallery/presentation/memory_provider.dart';
+
 import 'package:silver_guide/features/medication/presentation/health_page.dart';
-import 'package:silver_guide/features/medication/presentation/medication_provider.dart';
 import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
 import 'package:silver_guide/features/profile/presentation/settings_page.dart';
 
@@ -27,7 +26,7 @@ class MainNavigationScaffold extends ConsumerWidget {
     // List Halaman (Placeholder untuk saat ini)
     final List<Widget> pages = [
       const HealthPage(),
-      const ActivitiesPage(), 
+      const ActivitiesPage(),
       const MemoriesPage(),
       const FamilyChatPage(),
     ];
@@ -40,19 +39,18 @@ class MainNavigationScaffold extends ConsumerWidget {
       "Ruang Keluarga",
     ];
 
-
     return Scaffold(
       // 1. Header dengan SOS Button
       appBar: AppBar(
         title: Text(titles[currentIndex]),
         actions: [
-          _buildSOSButton(context), 
+          _buildSOSButton(context),
           const SizedBox(width: 12),
-           GestureDetector(
+          GestureDetector(
             onTap: () {
               Navigator.push(
-                context, 
-                MaterialPageRoute(builder: (context) => const SettingsPage())
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
               );
             },
             child: CircleAvatar(
@@ -60,18 +58,24 @@ class MainNavigationScaffold extends ConsumerWidget {
               backgroundColor: Colors.grey[300],
               // Logic: Jika user ada DAN photoUrl tidak kosong -> Pakai Foto User
               // Jika tidak -> Pakai Placeholder
-              backgroundImage: (user != null && user.photoUrl.isNotEmpty) 
-                ? NetworkImage(user.photoUrl) 
-                : const NetworkImage("https://cdn-icons-png.flaticon.com/256/149/149071.png"),
-              
+              backgroundImage: (user != null && user.photoUrl.isNotEmpty)
+                  ? NetworkImage(user.photoUrl)
+                  : const NetworkImage(
+                      "https://cdn-icons-png.flaticon.com/256/149/149071.png",
+                    ),
+
               // Tampilkan loading kecil jika data sedang diambil
-              child: asyncUser.isLoading 
-                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)) 
-                : null,
+              child: asyncUser.isLoading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : null,
             ),
           ),
           const SizedBox(width: 16),
-          ],
+        ],
       ),
 
       // 2. Body dengan IndexedStack (State Preservation)
@@ -143,27 +147,4 @@ class MainNavigationScaffold extends ConsumerWidget {
   }
 
   // Helper sementara untuk Placeholder
-  Widget _buildPlaceholder(String title, IconData icon) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 80, color: AppColors.primary.withOpacity(0.5)),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: AppTheme.lightTheme.textTheme.displayMedium,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            "Fitur ini akan segera dibangun.",
-            style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
-              color: AppColors.textSecondary,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart'; // Untuk format tanggal Date Strip
 import 'package:silver_guide/app/theme/app_theme.dart';
-import 'package:silver_guide/features/medication/domain/medication_model.dart';
 import 'package:silver_guide/features/profile/domain/user_model.dart';
 import 'package:silver_guide/features/profile/presentation/guardian_state.dart';
 import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
@@ -46,14 +45,14 @@ class HealthPage extends ConsumerWidget {
           return null;
         },
         loading: () => null,
-        error: (_, __) => null,
+        error: (_, error) => null,
       ),
 
       body: currentUserAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
         ),
-        error: (_, __) => const SizedBox(),
+        error: (_, error) => const SizedBox(),
         data: (user) {
           // MODE 1: GUARDIAN DASHBOARD (Belum pilih siapa-siapa)
           if (user.role == UserRole.guardian && activeProfileId == null) {
@@ -88,7 +87,7 @@ class _GuardianHealthDashboard extends ConsumerWidget {
       loading: () => const Center(
         child: CircularProgressIndicator(color: AppColors.primary),
       ),
-      error: (_, __) => const Center(child: Text("Gagal memuat keluarga")),
+      error: (_, error) => const Center(child: Text("Gagal memuat keluarga")),
       data: (members) {
         final elderlyMembers = members
             .where((m) => m.role == UserRole.elderly)
@@ -102,7 +101,7 @@ class _GuardianHealthDashboard extends ConsumerWidget {
                 Icon(
                   Icons.family_restroom,
                   size: 60,
-                  color: AppColors.textSecondary.withOpacity(0.3),
+                  color: AppColors.textSecondary.withValues(alpha: 0.3),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -165,7 +164,7 @@ class _HealthSummaryCard extends ConsumerWidget {
           child: Center(child: CircularProgressIndicator()),
         ),
       ),
-      error: (_, __) => const SizedBox(),
+      error: (_, error) => const SizedBox(),
       data: (tasks) {
         final total = tasks.length;
         final taken = tasks.where((t) => t.isTaken).length;
@@ -191,12 +190,15 @@ class _HealthSummaryCard extends ConsumerWidget {
             borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: AppColors.shadow.withOpacity(0.08),
+                color: AppColors.shadow.withValues(alpha: 0.08),
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
             ],
-            border: Border.all(color: statusColor.withOpacity(0.3), width: 1),
+            border: Border.all(
+              color: statusColor.withValues(alpha: 0.3),
+              width: 1,
+            ),
           ),
           child: Material(
             color: Colors.transparent,
@@ -274,7 +276,7 @@ class _HealthSummaryCard extends ConsumerWidget {
                                   vertical: 2,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: statusColor.withOpacity(0.1),
+                                  color: statusColor.withValues(alpha: 0.1),
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
@@ -429,7 +431,7 @@ class _DetailTimelineView extends ConsumerWidget {
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -479,12 +481,12 @@ class _DetailTimelineView extends ConsumerWidget {
                       border: Border.all(
                         color: isSelected
                             ? AppColors.primary
-                            : AppColors.textSecondary.withOpacity(0.3),
+                            : AppColors.textSecondary.withValues(alpha: 0.3),
                       ),
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: AppColors.primary.withOpacity(0.3),
+                                color: AppColors.primary.withValues(alpha: 0.3),
                                 blurRadius: 8,
                                 offset: const Offset(0, 4),
                               ),

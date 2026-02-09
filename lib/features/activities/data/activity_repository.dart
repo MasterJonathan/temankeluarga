@@ -18,7 +18,9 @@ class ActivityRepository {
 
   // READ (Stream Realtime)
   Stream<List<ActivityItem>> watchDailyActivities(String userId) {
-    final query = _firestore.collection('activities').where('userId', isEqualTo: userId);
+    final query = _firestore
+        .collection('activities')
+        .where('userId', isEqualTo: userId);
 
     return query.snapshots().asyncMap((snapshot) async {
       final List<ActivityItem> items = [];
@@ -27,7 +29,8 @@ class ActivityRepository {
       for (final doc in snapshot.docs) {
         // Cek log harian
         final logDoc = await doc.reference.collection('logs').doc(today).get();
-        final bool isCompleted = logDoc.exists && logDoc.data()?['completed'] == true;
+        final bool isCompleted =
+            logDoc.exists && logDoc.data()?['completed'] == true;
 
         items.add(ActivityItem.fromMap(doc.id, doc.data(), isCompleted));
       }
@@ -38,10 +41,17 @@ class ActivityRepository {
   // UPDATE (Toggle Status)
   Future<void> toggleActivity(String activityId, bool currentStatus) async {
     final today = _getTodayDateString();
-    final logRef = _firestore.collection('activities').doc(activityId).collection('logs').doc(today);
+    final logRef = _firestore
+        .collection('activities')
+        .doc(activityId)
+        .collection('logs')
+        .doc(today);
 
     if (!currentStatus) {
-      await logRef.set({'completed': true, 'timestamp': FieldValue.serverTimestamp()});
+      await logRef.set({
+        'completed': true,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
     } else {
       await logRef.delete();
     }
@@ -53,4 +63,6 @@ class ActivityRepository {
   }
 }
 
-final activityRepositoryProvider = Provider((ref) => ActivityRepository(FirebaseFirestore.instance));
+final activityRepositoryProvider = Provider(
+  (ref) => ActivityRepository(FirebaseFirestore.instance),
+);

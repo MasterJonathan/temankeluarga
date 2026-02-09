@@ -15,9 +15,9 @@ class ActivityFormSheet extends ConsumerStatefulWidget {
 class _ActivityFormSheetState extends ConsumerState<ActivityFormSheet> {
   final _titleController = TextEditingController();
   final _msgController = TextEditingController();
-  
+
   String _selectedIconKey = 'flower';
-  Color _selectedColor = AppColors.primary;
+  final Color _selectedColor = AppColors.primary;
 
   final Map<String, IconData> _iconOptions = {
     'flower': Icons.local_florist,
@@ -36,8 +36,10 @@ class _ActivityFormSheetState extends ConsumerState<ActivityFormSheet> {
       userId: widget.userId,
       title: _titleController.text,
       iconKey: _selectedIconKey,
-      colorValue: _selectedColor.value,
-      motivationalMessage: _msgController.text.isEmpty ? "Hebat!" : _msgController.text,
+      colorValue: _selectedColor.toARGB32(),
+      motivationalMessage: _msgController.text.isEmpty
+          ? "Hebat!"
+          : _msgController.text,
     );
 
     ref.read(activityActionsProvider).addActivity(newItem);
@@ -49,17 +51,32 @@ class _ActivityFormSheetState extends ConsumerState<ActivityFormSheet> {
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
-        left: 20, right: 20, top: 20
+        left: 20,
+        right: 20,
+        top: 20,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("Tambah Aktivitas", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const Text(
+            "Tambah Aktivitas",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 16),
-          TextField(controller: _titleController, decoration: const InputDecoration(labelText: "Nama Aktivitas (Contoh: Jalan Pagi)")),
+          TextField(
+            controller: _titleController,
+            decoration: const InputDecoration(
+              labelText: "Nama Aktivitas (Contoh: Jalan Pagi)",
+            ),
+          ),
           const SizedBox(height: 12),
-          TextField(controller: _msgController, decoration: const InputDecoration(labelText: "Pesan Semangat (Contoh: Sehat selalu!)")),
+          TextField(
+            controller: _msgController,
+            decoration: const InputDecoration(
+              labelText: "Pesan Semangat (Contoh: Sehat selalu!)",
+            ),
+          ),
           const SizedBox(height: 16),
           const Text("Pilih Ikon:"),
           const SizedBox(height: 8),
@@ -68,7 +85,10 @@ class _ActivityFormSheetState extends ConsumerState<ActivityFormSheet> {
             children: _iconOptions.entries.map((e) {
               final isSelected = _selectedIconKey == e.key;
               return ChoiceChip(
-                label: Icon(e.value, color: isSelected ? Colors.white : AppColors.primary),
+                label: Icon(
+                  e.value,
+                  color: isSelected ? Colors.white : AppColors.primary,
+                ),
                 selected: isSelected,
                 selectedColor: AppColors.primary,
                 onSelected: (bool selected) {
