@@ -68,7 +68,7 @@ class AppTheme {
           height: 1.5,
           color: AppColors.textPrimary,
         ),
-        labelLarge: GoogleFonts.lora(
+        labelLarge: GoogleFonts.beVietnamPro(
           // For Buttons
           fontSize: 16,
           fontWeight: FontWeight.bold,
