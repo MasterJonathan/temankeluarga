@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:silver_guide/app/theme/app_theme.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'auth_controller.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
@@ -121,75 +122,92 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.surface,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: _prevStep,
         ),
-        title: const Text("Buat Akun Baru"),
-        backgroundColor: AppColors.surface,
+        title: const Text(
+          "Buat Akun Baru",
+          style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // 1. Progress Indicator
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Row(
-                children: [
-                  _buildProgressDot(0),
-                  _buildProgressLine(0),
-                  _buildProgressDot(1),
-                  _buildProgressLine(1),
-                  _buildProgressDot(2),
-                ],
-              ),
-            ),
-
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics:
-                    const NeverScrollableScrollPhysics(), // Disable swipe manual
-                children: [
-                  _buildStep1Account(),
-                  _buildStep2Personal(),
-                  _buildStep3Role(),
-                ],
-              ),
-            ),
-
-            // Tombol Lanjut (Hanya muncul di Step 1 & 2)
-            // Di Step 3 tombolnya menyatu dengan pilihan kartu agar lebih intuitif
-            if (_currentStep < 2)
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            center: Alignment.topLeft,
+            radius: 2,
+            colors: [Color(0xFFffebe5), Color(0xFFfbf3ff)],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              Image.asset('images/2.png', height: 300),
+              // 1. Progress Indicator
               Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _nextStep,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                child: Row(
+                  children: [
+                    _buildProgressDot(0),
+                    _buildProgressLine(0),
+                    _buildProgressDot(1),
+                    _buildProgressLine(1),
+                    _buildProgressDot(2),
+                  ],
+                ),
+              ),
+
+              Expanded(
+                child: PageView(
+                  controller: _pageController,
+                  physics:
+                      const NeverScrollableScrollPhysics(), // Disable swipe manual
+                  children: [
+                    _buildStep1Account(),
+                    _buildStep2Personal(),
+                    _buildStep3Role(),
+                  ],
+                ),
+              ),
+
+              // Tombol Lanjut (Hanya muncul di Step 1 & 2)
+              // Di Step 3 tombolnya menyatu dengan pilihan kartu agar lebih intuitif
+              if (_currentStep < 2)
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: _nextStep,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
-                    ),
-                    child: const Text(
-                      "Lanjut",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      child: const Text(
+                        "Lanjut",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -204,33 +222,38 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Mulai dari Akun",
-            style: AppTheme.lightTheme.textTheme.displaySmall,
+            "Mulai dari akun.",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+              fontFamily: GoogleFonts.beVietnamPro().fontFamily,
+            ),
           ),
           const SizedBox(height: 8),
           const Text(
             "Daftarkan email dan kata sandi untuk keamanan akun Anda.",
-            style: TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 18, color: AppColors.textPrimary),
           ),
           const SizedBox(height: 32),
 
           _buildTextField(
             controller: _emailController,
-            label: "Alamat Email",
+            label: "Email",
             icon: Icons.email_outlined,
             keyboardType: TextInputType.emailAddress,
           ),
           const SizedBox(height: 16),
           _buildTextField(
             controller: _passController,
-            label: "Kata Sandi",
+            label: "Kata sandi",
             icon: Icons.lock_outline,
             isPassword: true,
           ),
           const SizedBox(height: 16),
           _buildTextField(
             controller: _confirmPassController,
-            label: "Ulangi Kata Sandi",
+            label: "Ulangi kata sandi",
             icon: Icons.lock_outline,
             isPassword: true,
           ),
@@ -245,11 +268,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("Data Diri", style: AppTheme.lightTheme.textTheme.displaySmall),
+          Text(
+            "Isi data diri.",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+              fontFamily: GoogleFonts.beVietnamPro().fontFamily,
+            ),
+          ),
           const SizedBox(height: 8),
           const Text(
             "Siapa nama panggilan akrab Anda?",
-            style: TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 18, color: AppColors.textPrimary),
           ),
           const SizedBox(height: 32),
 
@@ -286,13 +317,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Pilih Peran",
-            style: AppTheme.lightTheme.textTheme.displaySmall,
+            "Pilih peran.",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+              fontFamily: GoogleFonts.beVietnamPro().fontFamily,
+            ),
           ),
           const SizedBox(height: 8),
           const Text(
             "Bagaimana Anda akan menggunakan aplikasi ini?",
-            style: TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(fontSize: 18, color: AppColors.textPrimary),
           ),
           const SizedBox(height: 32),
 
@@ -405,8 +441,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         controller: controller,
         obscureText: isPassword,
         keyboardType: keyboardType,
+        style: GoogleFonts.getFont('Open Sans', color: AppColors.textPrimary),
         decoration: InputDecoration(
           labelText: label,
+          labelStyle: GoogleFonts.openSans(color: AppColors.textSecondary),
           prefixIcon: Icon(icon, color: AppColors.textSecondary),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
