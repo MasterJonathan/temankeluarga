@@ -52,7 +52,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   "Silakan masuk untuk melanjutkan.",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: AppColors.textSecondary.withOpacity(0.8),
+                    color: AppColors.textSecondary.withValues(alpha: 0.8),
                   ),
                 ),
 
@@ -124,7 +124,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   children: [
                     Expanded(
                       child: Divider(
-                        color: AppColors.textSecondary.withOpacity(0.2),
+                        color: AppColors.textSecondary.withValues(alpha: 0.2),
                       ),
                     ),
                     Padding(
@@ -133,13 +133,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         "Atau masuk dengan",
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary.withOpacity(0.6),
+                          color: AppColors.textSecondary.withValues(alpha: 0.6),
                         ),
                       ),
                     ),
                     Expanded(
                       child: Divider(
-                        color: AppColors.textSecondary.withOpacity(0.2),
+                        color: AppColors.textSecondary.withValues(alpha: 0.2),
                       ),
                     ),
                   ],
@@ -228,7 +228,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withOpacity(0.05),
+            color: AppColors.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -282,6 +282,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       // Main.dart will automatically redirect on auth change
     } catch (e) {
       if (mounted) {
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("Login Gagal: ${e.toString()}"),
@@ -302,6 +303,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       await ref.read(authControllerProvider).loginWithGoogle();
     } catch (e) {
       if (mounted) {
+        if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("Google Login Gagal: ${e.toString()}"),
@@ -338,7 +340,9 @@ class _SocialButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.textSecondary.withOpacity(0.2)),
+          border: Border.all(
+            color: AppColors.textSecondary.withValues(alpha: 0.2),
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

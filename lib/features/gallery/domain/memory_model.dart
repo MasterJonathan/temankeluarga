@@ -1,31 +1,50 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class MemoryPost {
   final String id;
-  final String content;     // Teks Jurnal (Wajib)
-  final String? imageUrl;   // Foto (Opsional)
+  final String familyId; // Shared per keluarga
+  final String authorId; // Siapa yang posting
+  final String authorName; // Cache nama author
+  final String content;
+  final String? imageUrl;
   final DateTime date;
-  final String? selectedReaction; // Emoji yang dipilih user (misal: '❤️', '🙏')
-  final Map<String, int> reactionCounts; // Total reaksi: {'❤️': 2, '👍': 1}
+  
+  // Map untuk menyimpan reaksi: {'userId_A': '❤️', 'userId_B': '👍'}
+  final Map<String, String> reactions; 
 
   MemoryPost({
     required this.id,
+    required this.familyId,
+    required this.authorId,
+    required this.authorName,
     required this.content,
     this.imageUrl,
     required this.date,
-    this.selectedReaction,
-    this.reactionCounts = const {},
+    this.reactions = const {},
   });
 
-  MemoryPost copyWith({
-    String? selectedReaction,
-    Map<String, int>? reactionCounts,
-  }) {
+  Map<String, dynamic> toMap() {
+    return {
+      'familyId': familyId,
+      'authorId': authorId,
+      'authorName': authorName,
+      'content': content,
+      'imageUrl': imageUrl,
+      'date': Timestamp.fromDate(date),
+      'reactions': reactions,
+    };
+  }
+
+  factory MemoryPost.fromMap(String docId, Map<String, dynamic> map) {
     return MemoryPost(
-      id: id,
-      content: content,
-      imageUrl: imageUrl,
-      date: date,
-      selectedReaction: selectedReaction ?? this.selectedReaction,
-      reactionCounts: reactionCounts ?? this.reactionCounts,
+      id: docId,
+      familyId: map['familyId'] ?? '',
+      authorId: map['authorId'] ?? '',
+      authorName: map['authorName'] ?? 'Keluarga',
+      content: map['content'] ?? '',
+      imageUrl: map['imageUrl'],
+      date: (map['date'] as Timestamp).toDate(),
+      reactions: Map<String, String>.from(map['reactions'] ?? {}),
     );
   }
 }
