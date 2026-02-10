@@ -148,7 +148,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           child: Column(
             children: [
               const SizedBox(height: 16),
-              Image.asset('images/2.png', height: 300),
+              Image.asset('images/2.png', height: 240),
               // 1. Progress Indicator
               Padding(
                 padding: const EdgeInsets.symmetric(
