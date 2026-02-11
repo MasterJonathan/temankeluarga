@@ -118,6 +118,7 @@ class AuthController {
     required String name,
     required String phone,
     required String roleStr,
+    String? ageRange,
   }) async {
     final auth = ref.read(firebaseAuthProvider);
     final firestore = ref.read(firestoreProvider);
@@ -138,6 +139,7 @@ class AuthController {
           "https://ui-avatars.com/api/?name=${Uri.encodeComponent(name)}&background=random",
       role: roleStr == 'guardian' ? UserRole.guardian : UserRole.elderly,
       phone: phone,
+      ageRange: ageRange,
       createdAt: DateTime.now(),
     );
 
@@ -163,6 +165,13 @@ class AuthController {
 
     // Logout Firebase
     await ref.read(firebaseAuthProvider).signOut();
+  }
+
+  // --- PASSWORD RESET ---
+  Future<void> sendPasswordResetEmail(String email) async {
+    await ref
+        .read(firebaseAuthProvider)
+        .sendPasswordResetEmail(email: email.trim());
   }
 }
 

@@ -62,7 +62,7 @@ class _TopicSelector extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -80,7 +80,7 @@ class _TopicSelector extends ConsumerWidget {
                 color: AppColors.textSecondary,
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
 
             _TopicCard(
               icon: Icons.medication,

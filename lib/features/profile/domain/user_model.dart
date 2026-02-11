@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 enum UserRole {
-  elderly,   // Lansia
-  guardian,  // Pendamping
+  elderly, // Lansia
+  guardian, // Pendamping
 }
 
 class UserProfile {
@@ -11,8 +11,10 @@ class UserProfile {
   final String email;
   final String photoUrl;
   final UserRole role;
-  final String phone;       // Tambahan
-  final String? familyId; 
+  final String phone; // Tambahan
+  final String? ageRange; // Tambahan: Dewasa muda, Dewasa mapan, Lansia
+  final double textSize; // 0.8: Kecil, 1.0: Normal, 1.2: Besar
+  final String? familyId;
   final DateTime createdAt; // Tambahan untuk sorting
 
   UserProfile({
@@ -22,6 +24,8 @@ class UserProfile {
     required this.photoUrl,
     required this.role,
     this.phone = '',
+    this.ageRange,
+    this.textSize = 1.0,
     this.familyId,
     required this.createdAt,
   });
@@ -37,6 +41,8 @@ class UserProfile {
       'photoUrl': photoUrl,
       'role': role.name, // Simpan sebagai string 'elderly' atau 'guardian'
       'phone': phone,
+      'ageRange': ageRange,
+      'textSize': textSize,
       'familyId': familyId,
       'createdAt': Timestamp.fromDate(createdAt),
     };
@@ -52,6 +58,8 @@ class UserProfile {
       // Convert String 'elderly' kembali ke Enum
       role: map['role'] == 'guardian' ? UserRole.guardian : UserRole.elderly,
       phone: map['phone'] ?? '',
+      ageRange: map['ageRange'],
+      textSize: (map['textSize'] as num?)?.toDouble() ?? 1.0,
       familyId: map['familyId'],
       createdAt: (map['createdAt'] as Timestamp).toDate(),
     );
@@ -63,6 +71,8 @@ class UserProfile {
     String? photoUrl,
     UserRole? role,
     String? phone,
+    String? ageRange,
+    double? textSize,
     String? familyId,
   }) {
     return UserProfile(
@@ -72,6 +82,8 @@ class UserProfile {
       photoUrl: photoUrl ?? this.photoUrl,
       role: role ?? this.role,
       phone: phone ?? this.phone,
+      ageRange: ageRange ?? this.ageRange,
+      textSize: textSize ?? this.textSize,
       familyId: familyId ?? this.familyId,
       createdAt: createdAt,
     );
