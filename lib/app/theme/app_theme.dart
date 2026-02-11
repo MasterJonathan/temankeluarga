@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   // Primary (The Anchor) - Dark Olive Green
-  static const Color primary = Color(0xFF47423f);
+  static const Color primary = Color(0xFF8c6754);
 
   // Secondary (The Glow) - Muted Gold
   static const Color secondary = Color(0xFFd9e9ff);
@@ -94,7 +94,7 @@ class AppTheme {
         backgroundColor: AppColors.surface,
         indicatorColor: AppColors.secondary.withValues(alpha: 0.3),
         labelTextStyle: WidgetStateProperty.all(
-          GoogleFonts.lora(
+          GoogleFonts.beVietnamPro(
             fontSize: 14,
             fontWeight: FontWeight.w600,
             color: AppColors.textPrimary,

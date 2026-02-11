@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:silver_guide/features/authentication/presentation/auth_controller.dart';
 import '../domain/user_model.dart';
@@ -38,12 +38,25 @@ class ProfileController extends StreamNotifier<UserProfile> {
     await repo.updateProfile(uid: user.id, name: name, phone: phone);
   }
 
-  Future<void> updatePhoto(File imageFile) async {
+  Future<void> updatePhoto(Uint8List imageBytes) async {
     final user = state.value;
     if (user == null) return;
 
     final repo = ref.read(profileRepositoryProvider);
-    await repo.updateProfilePicture(user.id, imageFile);
+    await repo.updateProfilePicture(user.id, imageBytes);
+  }
+
+  Future<void> updateTextSize(double size) async {
+    final user = state.value;
+    if (user == null) return;
+
+    final repo = ref.read(profileRepositoryProvider);
+    await repo.updateTextSize(user.id, size);
+  }
+
+  Future<void> leaveFamily() async {
+    final repo = ref.read(profileRepositoryProvider);
+    await repo.leaveFamily();
   }
 }
 

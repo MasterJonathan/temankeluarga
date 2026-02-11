@@ -29,7 +29,7 @@ class TimelineTaskItem extends ConsumerWidget {
     final bool hasImage = task.imageUrl != null && task.imageUrl!.isNotEmpty;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      padding: const EdgeInsets.only(top: 24.0, bottom: 16.0),
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +181,7 @@ class TimelineTaskItem extends ConsumerWidget {
                                       ? Icons.undo
                                       : Icons.check_circle_outline,
                                   color: btnTextColor,
-                                  size: 22,
+                                  size: 16,
                                 ),
                                 const SizedBox(width: 8),
                                 Text(

@@ -1,10 +1,9 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:math'; // Untuk generate kode acak
+import 'dart:typed_data'; // Import for Uint8List
 import '../domain/user_model.dart';
 
 class ProfileRepository {
@@ -72,13 +71,12 @@ class ProfileRepository {
     return code;
   }
 
-
-   Future<List<UserProfile>> getFamilyMembers(String familyId) async {
+  Future<List<UserProfile>> getFamilyMembers(String familyId) async {
     final querySnapshot = await _firestore
         .collection('users')
         .where('familyId', isEqualTo: familyId)
         .get();
-        
+
     if (querySnapshot.docs.isEmpty) return [];
 
     return querySnapshot.docs
@@ -87,7 +85,11 @@ class ProfileRepository {
   }
 
   // 4. Update Data Profil (Nama & HP)
-  Future<void> updateProfile({required String uid, required String name, required String phone}) async {
+  Future<void> updateProfile({
+    required String uid,
+    required String name,
+    required String phone,
+  }) async {
     await _firestore.collection('users').doc(uid).update({
       'name': name,
       'phone': phone,
@@ -95,17 +97,45 @@ class ProfileRepository {
   }
 
   // 5. Update Foto Profil
-  // (Pastikan package firebase_storage sudah diimport)
-  Future<String> updateProfilePicture(String uid, File imageFile) async {
+  // Gunakan Uint8List agar support Flutter Web
+  Future<String> updateProfilePicture(String uid, Uint8List imageBytes) async {
     final ref = FirebaseStorage.instance.ref().child('users/$uid/profile.jpg');
-    await ref.putFile(imageFile);
+
+    // Metadata agar browser tahu ini adalah image
+    final metadata = SettableMetadata(contentType: 'image/jpeg');
+
+    await ref.putData(imageBytes, metadata);
     final url = await ref.getDownloadURL();
-    
-    await _firestore.collection('users').doc(uid).update({
-      'photoUrl': url,
-    });
-    
+
+    await _firestore.collection('users').doc(uid).update({'photoUrl': url});
+
     return url;
+  }
+
+  // 6. Update Text Size
+  Future<void> updateTextSize(String uid, double size) async {
+    await _firestore.collection('users').doc(uid).update({'textSize': size});
+  }
+
+  // 7. Keluar dari Keluarga
+  Future<void> leaveFamily() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return;
+
+    final userDoc = await _firestore.collection('users').doc(uid).get();
+    final familyId = userDoc.data()?['familyId'];
+
+    if (familyId != null && familyId.isNotEmpty) {
+      // 1. Update User: Hapus familyId
+      await _firestore.collection('users').doc(uid).update({
+        'familyId': FieldValue.delete(),
+      });
+
+      // 2. Update Family: Hapus member dari list
+      await _firestore.collection('families').doc(familyId).update({
+        'memberIds': FieldValue.arrayRemove([uid]),
+      });
+    }
   }
 }
 

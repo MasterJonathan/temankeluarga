@@ -23,6 +23,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   int _currentStep = 0; // 0, 1, 2
   String? _selectedRole; // 'elderly' atau 'guardian'
+  String? _selectedAgeRange; // Tambahan
   bool _isLoading = false;
 
   @override
@@ -51,6 +52,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     } else if (_currentStep == 1) {
       if (_nameController.text.isEmpty) {
         _showError("Nama Lengkap wajib diisi.");
+        return;
+      }
+      if (_selectedAgeRange == null) {
+        _showError("Silakan pilih rentang usia Anda.");
         return;
       }
     }
@@ -98,6 +103,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             name: _nameController.text,
             phone: _phoneController.text,
             roleStr: _selectedRole!, // 'elderly' atau 'guardian'
+            ageRange: _selectedAgeRange,
           );
 
       // Jika sukses, Auth State akan berubah jadi 'LoggedIn'
@@ -148,7 +154,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           child: Column(
             children: [
               const SizedBox(height: 16),
-              Image.asset('images/2.png', height: 300),
+              Image.asset('images/2.png', height: 240),
               // 1. Progress Indicator
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -296,6 +302,19 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             icon: Icons.phone_android,
             keyboardType: TextInputType.phone,
           ),
+          const SizedBox(height: 16),
+          // --- COMBOBOX RENTANG USIA ---
+          _buildDropdownField(
+            value: _selectedAgeRange,
+            label: "Rentang Usia",
+            icon: Icons.calendar_today_outlined,
+            items: [
+              "Dewasa muda (18–35 tahun)",
+              "Dewasa mapan (36–59 tahun)",
+              "Lansia (60+ tahun)",
+            ],
+            onChanged: (val) => setState(() => _selectedAgeRange = val),
+          ),
           const SizedBox(height: 8),
           const Text(
             "*Nomor HP berguna untuk pemulihan akun jika lupa password.",
@@ -306,6 +325,59 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildDropdownField({
+    required String? value,
+    required String label,
+    required IconData icon,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: DropdownButtonFormField<String>(
+        value: value,
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: GoogleFonts.openSans(color: AppColors.textSecondary),
+          prefixIcon: Icon(icon, color: AppColors.textSecondary),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: Colors.transparent,
+        ),
+        items: items.map((String item) {
+          return DropdownMenuItem<String>(
+            value: item,
+            child: Text(
+              item,
+              style: GoogleFonts.openSans(
+                color: AppColors.textPrimary,
+                fontSize: 14,
+              ),
+            ),
+          );
+        }).toList(),
+        onChanged: onChanged,
+        dropdownColor: Colors.white,
+        icon: const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
+        borderRadius: BorderRadius.circular(16),
       ),
     );
   }

@@ -38,7 +38,7 @@ class SettingsPage extends ConsumerWidget {
 
               // Pengaturan Umum
               const _SectionTitle(title: "UMUM"),
-              _GeneralSettingsCard(ref: ref),
+              _GeneralSettingsCard(user: user, ref: ref),
 
               const SizedBox(height: 40),
 
@@ -140,11 +140,11 @@ class _ProfileHeaderCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.primary,
         borderRadius: BorderRadius.circular(24),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: AppColors.shadow,
-            blurRadius: 15,
-            offset: Offset(0, 8),
+            color: AppColors.shadow.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -157,8 +157,27 @@ class _ProfileHeaderCard extends StatelessWidget {
             ),
             child: CircleAvatar(
               radius: 32,
-              backgroundColor: Colors.white,
-              backgroundImage: NetworkImage(user.photoUrl),
+              backgroundColor: AppColors.surface,
+              child: ClipOval(
+                child: Image.network(
+                  user.photoUrl,
+                  width: 64,
+                  height: 64,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Center(
+                      child: Text(
+                        user.name[0].toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
           ),
           const SizedBox(width: 20),
@@ -265,8 +284,8 @@ class _FamilyConnectionCard extends StatelessWidget {
                   );
                 },
               ),
-            )
-          else
+            ),
+          if (!hasFamily)
             Column(
               children: [
                 ListTile(
@@ -348,6 +367,71 @@ class _FamilyConnectionCard extends StatelessWidget {
               style: const TextStyle(fontSize: 13),
             ),
           ),
+
+          // --- TOMBOL KELUAR KELUARGA ---
+          if (hasFamily) ...[
+            const Divider(height: 2, color: AppColors.surface),
+            ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 4,
+              ),
+              leading: const Icon(Icons.exit_to_app, color: Colors.red),
+              title: const Text(
+                "Keluar dari keluarga",
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              onTap: () => _showLeaveFamilyDialog(context, ref),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showLeaveFamilyDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Keluar dari Keluarga?"),
+        content: const Text(
+          "Anda tidak akan lagi terhubung dengan anggota keluarga saat ini.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Batal"),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                await ref
+                    .read(profileControllerProvider.notifier)
+                    .leaveFamily();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("Berhasil keluar dari keluarga"),
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Gagal: $e"),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              }
+            },
+            child: const Text("Keluar", style: TextStyle(color: Colors.red)),
+          ),
         ],
       ),
     );
@@ -416,8 +500,15 @@ class _FamilyConnectionCard extends StatelessWidget {
 }
 
 class _GeneralSettingsCard extends StatelessWidget {
+  final UserProfile user;
   final WidgetRef ref;
-  const _GeneralSettingsCard({required this.ref});
+  const _GeneralSettingsCard({required this.user, required this.ref});
+
+  String _getTextSizeLabel(double value) {
+    if (value <= 0.8) return "Kecil";
+    if (value >= 1.2) return "Besar";
+    return "Normal";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -448,22 +539,57 @@ class _GeneralSettingsCard extends StatelessWidget {
             trailing: Switch(
               value: true,
               onChanged: (v) {},
-              // used activeTrackColor as approx or thumbColor
               activeTrackColor: AppColors.primary,
               trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
             ),
           ),
           const Divider(height: 2, color: AppColors.surface),
-          const ListTile(
-            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-            leading: Icon(Icons.text_fields, color: AppColors.textSecondary),
-            title: Text("Ukuran Teks"),
-            trailing: Text(
-              "Besar",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                color: AppColors.primary,
-              ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.text_fields,
+                      color: AppColors.textSecondary,
+                    ),
+                    const SizedBox(width: 16),
+                    const Text("Ukuran Teks", style: TextStyle(fontSize: 16)),
+                    const Spacer(),
+                    Text(
+                      _getTextSizeLabel(user.textSize),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    activeTrackColor: AppColors.primary,
+                    inactiveTrackColor: AppColors.surface,
+                    thumbColor: AppColors.primary,
+                    overlayColor: AppColors.primary.withValues(alpha: 0.1),
+                    valueIndicatorColor: AppColors.primary,
+                  ),
+                  child: Slider(
+                    value: user.textSize,
+                    min: 0.8,
+                    max: 1.2,
+                    divisions: 2,
+                    label: _getTextSizeLabel(user.textSize),
+                    onChanged: (double value) {
+                      ref
+                          .read(profileControllerProvider.notifier)
+                          .updateTextSize(value);
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ],

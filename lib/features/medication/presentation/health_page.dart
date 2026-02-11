@@ -332,40 +332,43 @@ class _DetailTimelineView extends ConsumerWidget {
 
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(
-          child: Column(
-            children: [
-              // HEADER: Tombol Back Khusus Guardian
-              if (isGuardianMode)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: GestureDetector(
-                    onTap: () =>
-                        ref.read(viewedElderlyIdProvider.notifier).state = null,
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.arrow_back_ios_new,
-                          size: 18,
-                          color: AppColors.primary,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          "Kembali ke Ringkasan",
-                          style: AppTheme.lightTheme.textTheme.bodyLarge
-                              ?.copyWith(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                      ],
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (isGuardianMode)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 16),
+                    child: GestureDetector(
+                      onTap: () =>
+                          ref.read(viewedElderlyIdProvider.notifier).state =
+                              null,
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.arrow_back_ios_new,
+                            size: 18,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Kembali ke Ringkasan",
+                            style: AppTheme.lightTheme.textTheme.bodyLarge
+                                ?.copyWith(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
 
-              // DATE STRIP (Kalender Horizontal)
-              _buildDateStrip(context, ref, selectedDate, userName),
-            ],
+                _buildDateStrip(context, ref, selectedDate, userName),
+              ],
+            ),
           ),
         ),
 
@@ -374,18 +377,25 @@ class _DetailTimelineView extends ConsumerWidget {
             if (tasks.isEmpty) {
               return const SliverFillRemaining(
                 hasScrollBody: false,
-                child: Center(
-                  child: Text(
-                    "Tidak ada catatan obat pada tanggal ini.",
-                    style: TextStyle(color: AppColors.textSecondary),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Center(
+                    child: Text(
+                      "Tidak ada catatan obat pada tanggal ini.",
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
                   ),
                 ),
               );
             }
-            return SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                return TimelineTaskItem(task: tasks[index]);
-              }, childCount: tasks.length),
+
+            return SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  return TimelineTaskItem(task: tasks[index]);
+                }, childCount: tasks.length),
+              ),
             );
           },
           loading: () => const SliverFillRemaining(
@@ -416,6 +426,7 @@ class _DetailTimelineView extends ConsumerWidget {
     // Format Tanggal Header (misal: "Senin, 24 Oktober 2023")
     final String formattedHeaderDate = DateFormat(
       'EEEE, d MMMM yyyy',
+      'id_ID',
     ).format(selectedDate);
 
     final int hour = DateTime.now().hour;
@@ -430,29 +441,163 @@ class _DetailTimelineView extends ConsumerWidget {
       greeting = "Selamat Malam";
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "$greeting, $name",
-            style: AppTheme.lightTheme.textTheme.displayMedium?.copyWith(
-              color: AppColors.primary,
-            ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 1. Greeting & Tanggal (Outside)
+        Text(
+          "$greeting, $name",
+          style: AppTheme.lightTheme.textTheme.displayMedium?.copyWith(
+            color: AppColors.primary,
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
           ),
-          const SizedBox(height: 8),
-          Text(
-            formattedHeaderDate,
-            style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
-              color: AppColors.textSecondary,
-              fontStyle: FontStyle.italic,
-            ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          formattedHeaderDate,
+          style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
+            color: AppColors.textSecondary,
+            fontStyle: FontStyle.italic,
+            fontSize: 14,
           ),
-          const SizedBox(height: 24),
+        ),
 
-          // Row Kalender
-          SingleChildScrollView(
+        const SizedBox(height: 24),
+
+        // 2. Banner Quote (Accent Background)
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: AppColors.accent.withValues(alpha: 0.5), // Subtle accent
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Container(
+                  height: 130, // Tinggi tetap untuk centering quote
+                  padding: const EdgeInsets.fromLTRB(24, 0, 16, 16),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "\"Kesehatan adalah harta paling berharga yang kita miliki.\"",
+                        style: TextStyle(
+                          fontStyle: FontStyle.italic,
+                          color: AppColors.textPrimary.withValues(alpha: 0.8),
+                          fontSize: 15,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Gambar mepet bawah (Zero padding bottom)
+              Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Image.asset(
+                  "assets/images/1_crop.png",
+                  height: 110,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 32),
+
+        // 2. Tanya AI Section
+        Text(
+          "Tanya AI",
+          style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.secondary.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              // Mic Button (Besar untuk Lansia)
+              GestureDetector(
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Mulai Bicara...")),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.mic,
+                    size: 24,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // Input & Send
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const TextField(
+                        decoration: InputDecoration(
+                          hintText: "Tanya sesuatu...",
+                          border: InputBorder.none,
+                          hintStyle: TextStyle(fontSize: 14),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Icons.send, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 32),
+
+        // 2. Row Kalender
+        Center(
+          child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
               children: dates.map((date) {
@@ -460,7 +605,10 @@ class _DetailTimelineView extends ConsumerWidget {
                 final isToday = DateUtils.isSameDay(date, today);
 
                 final dayNum = date.day.toString();
-                final dayName = DateFormat('E').format(date); // Mon, Tue
+                final dayName = DateFormat(
+                  'E',
+                  'id_ID',
+                ).format(date); // Sen, Sel, Rab, Kam
 
                 return GestureDetector(
                   onTap: () {
@@ -521,8 +669,16 @@ class _DetailTimelineView extends ConsumerWidget {
               }).toList(),
             ),
           ),
-        ],
-      ),
+        ),
+        const SizedBox(height: 32),
+        Text(
+          "Jadwal Minum Obat",
+          style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
     );
   }
 }

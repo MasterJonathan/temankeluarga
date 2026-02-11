@@ -84,7 +84,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
-                      onPressed: () {},
+                      onPressed: _isLoading ? null : _handleForgotPassword,
                       child: Text(
                         "Lupa kata sandi?",
                         style: GoogleFonts.beVietnamPro(
@@ -154,25 +154,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                   const SizedBox(height: 24),
 
-                  // 5. Social Login Buttons (Google & Phone)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _SocialButton(
-                          icon: Icons.g_mobiledata, // Icon Google
-                          label: "Google",
-                          onTap: () => _handleGoogleLogin(context, ref),
-                        ),
+                  // 5. Social Login Button (Google)
+                  Center(
+                    child: SizedBox(
+                      width: 180,
+                      child: _SocialButton(
+                        icon: Icons.g_mobiledata, // Icon Google
+                        label: "Google",
+                        onTap: () => _handleGoogleLogin(context, ref),
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _SocialButton(
-                          icon: Icons.phone,
-                          label: "No. HP",
-                          onTap: () => _handlePhoneLogin(context, ref),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
 
                   const SizedBox(height: 40),
@@ -268,6 +259,57 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
+  void _handleForgotPassword() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Masukkan email di kolom atas untuk reset kata sandi."),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      await ref.read(authControllerProvider).sendPasswordResetEmail(email);
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text("Email Terkirim"),
+            content: Text(
+              "Link reset kata sandi telah dikirim ke $email. Periksa kotak masuk atau spam.",
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Gagal: ${e.toString()}"),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
   void _handleLogin(BuildContext context, WidgetRef ref) async {
     // Tutup Keyboard
     FocusScope.of(context).unfocus();
@@ -314,12 +356,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         setState(() => _isLoading = false);
       }
     }
-  }
-
-  void _handlePhoneLogin(BuildContext context, WidgetRef ref) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Login dengan Nomor HP belum tersedia.")),
-    );
   }
 }
 
