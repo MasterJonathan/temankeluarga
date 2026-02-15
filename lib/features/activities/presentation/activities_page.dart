@@ -5,7 +5,6 @@ import 'package:silver_guide/features/profile/domain/user_model.dart';
 import 'package:silver_guide/features/profile/presentation/guardian_state.dart';
 import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
 import 'package:silver_guide/features/activities/domain/activity_model.dart';
-import 'package:silver_guide/widgets/activity_form_sheet.dart';
 import 'activity_provider.dart';
 import 'activity_actions.dart';
 
@@ -19,31 +18,6 @@ class ActivitiesPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-      floatingActionButton: currentUserAsync.when(
-        data: (user) {
-          // LOGIC STRICT: Hanya Guardian yang sedang memantau profil spesifik
-          if (user.role == UserRole.guardian && activeProfileId != null) {
-            return FloatingActionButton.extended(
-              heroTag: "fab_add_activity",
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (ctx) => ActivityFormSheet(userId: activeProfileId),
-                );
-              },
-              label: const Text("Tambah Hobi"),
-              icon: const Icon(Icons.local_florist),
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white, // Pastikan teks putih agar kontras
-            );
-          }
-          // Lansia atau Guardian di Dashboard tidak melihat tombol ini
-          return null;
-        },
-        loading: () => null,
-        error: (_, _) => null,
-      ),
 
       body: currentUserAsync.when(
         data: (user) {
@@ -176,7 +150,6 @@ class _ActivitySummaryCard extends ConsumerWidget {
   }
 }
 
-// === DETAIL VIEW ===
 class _DetailActivityView extends ConsumerWidget {
   final String activeProfileId;
   final bool isGuardianMode;
@@ -229,7 +202,6 @@ class _DetailActivityView extends ConsumerWidget {
 
         const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
-        // ... (Kode Grid Activity Card tetap sama seperti file sebelumnya)
         asyncActivities.when(
           data: (activities) {
             if (activities.isEmpty) {
@@ -255,12 +227,16 @@ class _DetailActivityView extends ConsumerWidget {
             );
           },
           loading: () => const SliverFillRemaining(
-            child: Center(child: CircularProgressIndicator()),
+            child: Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
           ),
           error: (e, _) =>
               SliverFillRemaining(child: Center(child: Text("Error: $e"))),
         ),
-        const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        const SliverToBoxAdapter(
+          child: SizedBox(height: 200),
+        ), // Padding bawah besar
       ],
     );
   }
@@ -275,14 +251,15 @@ class _ActivityCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDone = item.isCompleted;
+    final userAsync = ref.watch(profileControllerProvider);
+    final isGuardian = userAsync.valueOrNull?.role == UserRole.guardian;
 
     return GestureDetector(
       onTap: () async {
-        // Panggil Action Provider
         final msg = await ref
             .read(activityActionsProvider)
             .toggleActivity(
-              item.userId, // <--- Tambahkan parameter ini
+              item.userId,
               item.id,
               isDone,
               item.motivationalMessage,
@@ -310,47 +287,166 @@ class _ActivityCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: isDone
-                  ? item.color.withValues(alpha: 0.4)
-                  : Colors.black12,
+              color: isDone ? item.color.withOpacity(0.4) : Colors.black12,
               blurRadius: isDone ? 16 : 8,
               offset: Offset(0, isDone ? 8 : 4),
             ),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isDone
-                    ? Colors.white.withValues(alpha: 0.2)
-                    : item.color.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                item.icon,
-                size: 48,
-                color: isDone ? Colors.white : item.color,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Text(
-                item.title,
-                textAlign: TextAlign.center,
-                style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
-                  fontSize: 18,
-                  color: isDone ? Colors.white : AppColors.textPrimary,
-                  fontWeight: isDone ? FontWeight.bold : FontWeight.w600,
+        child: SizedBox(
+          width: double.infinity,
+          child: Stack(
+            alignment: Alignment.center, // <--- TAMBAHKAN INI
+            children: [
+              // CONTENT UTAMA
+              Container(
+                // Opsional: Bungkus Column dengan Container width infinity
+                // agar area Column memenuhi lebar kartu (bagus untuk alignment text)
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                ), // Pindahkan padding text ke sini
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment
+                      .center, // Pastikan anak-anak column di tengah
+                  children: [
+                    // GAMBAR ATAU IKON
+                    _buildImageOrIcon(isDone),
+
+                    const SizedBox(height: 16),
+
+                    // Text tidak perlu padding horizontal lagi jika parent sudah ada padding
+                    Text(
+                      item.title,
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+                        fontSize: 16,
+                        color: isDone ? Colors.white : AppColors.textPrimary,
+                        fontWeight: isDone ? FontWeight.bold : FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+
+              // TOMBOL DELETE (Khusus Guardian)
+              if (isGuardian)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () => _confirmDelete(context, ref),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.8),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.delete_outline,
+                        color: Colors.red[300],
+                        size: 18,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImageOrIcon(bool isDone) {
+    // 1. Cek Custom Image (URL)
+    if (item.customImage != null && !item.isAssetImage) {
+      return Container(
+        width: 104,
+        height: 104,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: Colors.white,
+          image: DecorationImage(
+            image: NetworkImage(item.customImage!),
+            fit: BoxFit.cover,
+            opacity: isDone ? 0.8 : 1.0,
+          ),
+        ),
+        child: isDone
+            ? const Center(
+                child: Icon(Icons.check, color: Colors.white, size: 40),
+              )
+            : null,
+      );
+    }
+
+    // 2. Cek Asset Image (Lokal)
+    if (item.customImage != null && item.isAssetImage) {
+      return Container(
+        width: 104,
+        height: 104,
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Image.asset(
+              item.customImage!,
+              fit: BoxFit.contain,
+              opacity: isDone ? const AlwaysStoppedAnimation(0.5) : null,
             ),
+            if (isDone)
+              const Icon(Icons.check, color: AppColors.primary, size: 40),
           ],
         ),
+      );
+    }
+
+    // 3. Fallback ke Ikon
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: isDone
+            ? Colors.white.withOpacity(0.2)
+            : item.color.withOpacity(0.1),
+        shape: BoxShape.circle,
+      ),
+      child: Icon(
+        item.icon,
+        size: 40,
+        color: isDone ? Colors.white : item.color,
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Hapus Aktivitas?"),
+        content: const Text("Aktivitas ini akan dihapus permanen."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Batal"),
+          ),
+          TextButton(
+            onPressed: () {
+              ref
+                  .read(activityActionsProvider)
+                  .deleteActivity(item.userId, item.id);
+              Navigator.pop(ctx);
+            },
+            child: const Text("Hapus", style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

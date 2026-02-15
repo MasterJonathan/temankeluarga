@@ -23,8 +23,8 @@ class ProfileRepository {
     });
   }
 
-  // 2. Gabung Keluarga (Update field familyId)
-  Future<void> joinFamily(String familyCode) async {
+  // 2. Request Join Keluarga (GANTI joinFamily)
+  Future<void> requestJoinFamily(String familyCode) async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;
 
@@ -38,17 +38,20 @@ class ProfileRepository {
       throw Exception("Kode Keluarga tidak ditemukan.");
     }
 
-    await _firestore.collection('users').doc(uid).update({
-      'familyId': familyCode,
+    final familyDocId = familyQuery.docs.first.id;
+
+    // Masukkan ke array 'requests' (Bukan memberIds)
+    await _firestore.collection('families').doc(familyDocId).update({
+      'requests': FieldValue.arrayUnion([uid])
     });
 
-    final familyDocId = familyQuery.docs.first.id;
-    await _firestore.collection('families').doc(familyDocId).update({
-      'memberIds': FieldValue.arrayUnion([uid]),
+    // User status update (optional, biar UI tau dia lagi pending)
+    await _firestore.collection('users').doc(uid).update({
+      'joinStatus': 'pending', // pending, approved
     });
   }
 
-  // 3. Buat Keluarga Baru (Khusus Guardian)
+  // 3. Buat Keluarga Baru (Khusus Guardian) - UPDATE: Tambah field requests
   Future<String> createFamilyGroup() async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) throw Exception("No User");
@@ -64,12 +67,69 @@ class ProfileRepository {
       'createdAt': FieldValue.serverTimestamp(),
       'createdBy': uid,
       'memberIds': [uid],
+      'requests': [], // Field baru ditambahkan sesuai instruksi
     });
 
     await _firestore.collection('users').doc(uid).update({'familyId': code});
 
     return code;
   }
+
+  // 4. TERIMA REQUEST (Khusus Guardian) - BARU
+  Future<void> acceptJoinRequest(String familyId, String targetUserId) async {
+    // Pindahkan dari requests ke memberIds
+    await _firestore.collection('families').doc(familyId).update({
+      'requests': FieldValue.arrayRemove([targetUserId]),
+      'memberIds': FieldValue.arrayUnion([targetUserId])
+    });
+
+    // Update User Profile
+    await _firestore.collection('users').doc(targetUserId).update({
+      'familyId': familyId, // Resmi punya familyId
+      'joinStatus': 'approved',
+    });
+  }
+
+  // 5. TOLAK / KICK MEMBER - BARU
+  Future<void> removeMember(String familyId, String targetUserId) async {
+    // Hapus dari family
+    await _firestore.collection('families').doc(familyId).update({
+      'memberIds': FieldValue.arrayRemove([targetUserId]),
+      'requests': FieldValue.arrayRemove([targetUserId]), // Jaga-jaga kalau masih di request
+    });
+
+    // Reset User Profile
+    await _firestore.collection('users').doc(targetUserId).update({
+      'familyId': FieldValue.delete(),
+      'joinStatus': FieldValue.delete(),
+    });
+  }
+
+  // 6. UPDATE FITUR LANSIA - BARU
+  Future<void> updateElderlyFeatures(String elderlyId, List<String> features) async {
+    await _firestore.collection('users').doc(elderlyId).update({
+      'enabledFeatures': features,
+    });
+  }
+
+  // 7. AMBIL REQUESTS (Stream) - BARU
+  Stream<List<UserProfile>> watchJoinRequests(String familyId) {
+    return _firestore
+        .collection('families')
+        .doc(familyId)
+        .snapshots()
+        .asyncMap((snapshot) async {
+          final requests = List<String>.from(snapshot.data()?['requests'] ?? []);
+          if (requests.isEmpty) return [];
+
+          // Fetch user profiles dari ID yang ada di request
+          // (Di production sebaiknya limit max 10 query 'in')
+          final usersQuery = await _firestore.collection('users').where(FieldPath.documentId, whereIn: requests).get();
+          return usersQuery.docs.map((d) => UserProfile.fromMap(d.data())).toList();
+        });
+  }
+
+  // --- Method Lama Lainnya ---
 
   Future<List<UserProfile>> getFamilyMembers(String familyId) async {
     final querySnapshot = await _firestore
@@ -84,7 +144,7 @@ class ProfileRepository {
         .toList();
   }
 
-  // 4. Update Data Profil (Nama & HP)
+  // Update Data Profil (Nama & HP)
   Future<void> updateProfile({
     required String uid,
     required String name,
@@ -96,7 +156,7 @@ class ProfileRepository {
     });
   }
 
-  // 5. Update Foto Profil
+  // Update Foto Profil
   // Gunakan Uint8List agar support Flutter Web
   Future<String> updateProfilePicture(String uid, Uint8List imageBytes) async {
     final ref = FirebaseStorage.instance.ref().child('users/$uid/profile.jpg');
@@ -112,12 +172,12 @@ class ProfileRepository {
     return url;
   }
 
-  // 6. Update Text Size
+  // Update Text Size
   Future<void> updateTextSize(String uid, double size) async {
     await _firestore.collection('users').doc(uid).update({'textSize': size});
   }
 
-  // 7. Keluar dari Keluarga
+  // Keluar dari Keluarga
   Future<void> leaveFamily() async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return;

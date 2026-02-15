@@ -6,7 +6,6 @@ import 'package:silver_guide/features/profile/domain/user_model.dart';
 import 'package:silver_guide/features/profile/presentation/guardian_state.dart';
 import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
 import 'package:silver_guide/widgets/timeline_task_item.dart';
-import 'package:silver_guide/widgets/medication_form_sheet.dart';
 import 'package:silver_guide/features/medication/presentation/medication_provider.dart';
 
 class HealthPage extends ConsumerWidget {
@@ -19,35 +18,6 @@ class HealthPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.surface,
-
-      // FAB: Hanya muncul jika sedang melihat detail (aktifId != null)
-      floatingActionButton: currentUserAsync.when(
-        data: (user) {
-          // LOGIC STRICT: Hanya Guardian yang sedang memantau profil spesifik
-          if (user.role == UserRole.guardian && activeProfileId != null) {
-            return FloatingActionButton.extended(
-              heroTag: "fab_add_medication",
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (ctx) =>
-                      MedicationFormSheet(userId: activeProfileId),
-                );
-              },
-              label: const Text("Tambah Obat"),
-              icon: const Icon(Icons.add),
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white, // Pastikan teks putih agar kontras
-            );
-          }
-          // Lansia atau Guardian di Dashboard tidak melihat tombol ini
-          return null;
-        },
-        loading: () => null,
-        error: (_, error) => null,
-      ),
-
       body: currentUserAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(color: AppColors.primary),
@@ -393,7 +363,7 @@ class _DetailTimelineView extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
-                  return TimelineTaskItem(task: tasks[index]);
+                  return TimelineTaskItem(selectedDate: selectedDate, task: tasks[index]);
                 }, childCount: tasks.length),
               ),
             );
@@ -405,7 +375,7 @@ class _DetailTimelineView extends ConsumerWidget {
               SliverFillRemaining(child: Center(child: Text("Error: $e"))),
         ),
 
-        const SliverToBoxAdapter(child: SizedBox(height: 100)),
+        const SliverToBoxAdapter(child: SizedBox(height: 200)),
       ],
     );
   }
