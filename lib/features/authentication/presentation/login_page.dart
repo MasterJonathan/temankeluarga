@@ -157,7 +157,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   // 5. Social Login Button (Google)
                   Center(
                     child: SizedBox(
-                      width: 180,
+                      width: double.infinity,
                       child: _SocialButton(
                         icon: Icons.g_mobiledata, // Icon Google
                         label: "Google",

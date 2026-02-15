@@ -119,6 +119,12 @@ class AuthController {
     required String phone,
     required String roleStr,
     String? ageRange,
+    List<String> enabledFeatures = const [
+      'health',
+      'activity',
+      'memory',
+      'chat',
+    ],
   }) async {
     final auth = ref.read(firebaseAuthProvider);
     final firestore = ref.read(firestoreProvider);
@@ -140,6 +146,7 @@ class AuthController {
       role: roleStr == 'guardian' ? UserRole.guardian : UserRole.elderly,
       phone: phone,
       ageRange: ageRange,
+      enabledFeatures: enabledFeatures,
       createdAt: DateTime.now(),
     );
 

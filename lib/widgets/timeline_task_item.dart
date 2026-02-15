@@ -3,38 +3,57 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:silver_guide/app/theme/app_theme.dart';
 import 'package:silver_guide/features/medication/domain/medication_model.dart';
 import 'package:silver_guide/features/medication/presentation/medication_actions.dart';
+import 'package:silver_guide/features/profile/domain/user_model.dart';
+import 'package:silver_guide/features/profile/presentation/profile_controller.dart'; // Butuh untuk cek role
 
 class TimelineTaskItem extends ConsumerWidget {
   final MedicationTask task;
+  final DateTime selectedDate;
 
-  const TimelineTaskItem({super.key, required this.task});
+  const TimelineTaskItem({
+    super.key,
+    required this.task,
+    required this.selectedDate,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Logic Warna: Invert jika sudah diminum
-    // Jika Done: Card Hijau, Teks Putih
-    // Jika Belum: Card Putih, Teks Coklat
+    final userAsync = ref.watch(profileControllerProvider);
+    final isGuardian = userAsync.valueOrNull?.role == UserRole.guardian;
+
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final taskDate = DateTime(
+      selectedDate.year,
+      selectedDate.month,
+      selectedDate.day,
+    );
+    final isToday = taskDate.isAtSameMomentAs(today);
+
+    String buttonText;
+    if (taskDate.isAtSameMomentAs(today)) {
+      buttonText = task.isTaken ? "Batalkan" : "Konfirmasi Selesai";
+    } else if (taskDate.isAfter(today)) {
+      buttonText = "Akan Datang";
+    } else {
+      buttonText = "Terlewati";
+    }
+
     final cardColor = task.isTaken ? AppColors.primary : Colors.white;
     final textColor = task.isTaken ? Colors.white : AppColors.textPrimary;
     final subTextColor = task.isTaken
         ? Colors.white70
         : AppColors.textSecondary;
-
-    // Logic Tombol:
-    // Jika Done: Tombol Putih, Teks Hijau
-    // Jika Belum: Tombol Hijau, Teks Putih
     final btnBgColor = task.isTaken ? Colors.white : AppColors.primary;
     final btnTextColor = task.isTaken ? AppColors.primary : Colors.white;
 
-    final bool hasImage = task.imageUrl != null && task.imageUrl!.isNotEmpty;
-
     return Padding(
-      padding: const EdgeInsets.only(top: 24.0, bottom: 16.0),
+      padding: const EdgeInsets.only(left: 16.0),
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Garis Waktu (Timeline Line)
+            // Timeline Line
             SizedBox(
               width: 50,
               child: Column(
@@ -50,27 +69,26 @@ class TimelineTaskItem extends ConsumerWidget {
                   Expanded(
                     child: Container(
                       width: 2,
-                      // Garis tetap Emas jika sukses, atau abu samar jika belum
                       color: task.isTaken
-                          ? AppColors.primary
-                          : AppColors.textSecondary.withValues(alpha: 0.2),
+                          ? AppColors.secondary
+                          : AppColors.textSecondary.withOpacity(0.2),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: 8),
-            // 2. Kartu Obat
+
+            // Kartu Obat
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.only(bottom: 24.0),
+                padding: const EdgeInsets.fromLTRB(8.0, 0, 0, 24.0),
                 child: Container(
                   decoration: BoxDecoration(
                     color: cardColor,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.shadow.withValues(alpha: 0.1),
+                        color: AppColors.shadow.withOpacity(0.1),
                         blurRadius: 15,
                         offset: const Offset(0, 8),
                       ),
@@ -78,50 +96,69 @@ class TimelineTaskItem extends ConsumerWidget {
                   ),
                   child: Column(
                     children: [
-                      // ROW ATAS: Gambar & Teks
                       Padding(
                         padding: const EdgeInsets.all(16),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // Foto Obat
                             Container(
                               width: 70,
                               height: 70,
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: Colors.grey[100],
                                 borderRadius: BorderRadius.circular(16),
                                 image: DecorationImage(
                                   image: NetworkImage(
-                                    hasImage
-                                        ? task.imageUrl!
-                                        : "https://cdn-icons-png.flaticon.com/256/883/883407.png", // Ikon obat default
+                                    task.imageUrl ??
+                                        "https://cdn-icons-png.flaticon.com/256/883/883407.png",
                                   ),
                                   fit: BoxFit.cover,
                                 ),
                               ),
                             ),
                             const SizedBox(width: 16),
-                            // Teks Info
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    task.title,
-                                    style: AppTheme
-                                        .lightTheme
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          fontSize: 19,
-                                          fontWeight: FontWeight.bold,
-                                          color: textColor,
-                                          decoration: task.isTaken
-                                              ? TextDecoration.lineThrough
-                                              : null,
-                                          decorationColor: Colors.white,
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          task.title,
+                                          style: AppTheme
+                                              .lightTheme
+                                              .textTheme
+                                              .titleLarge
+                                              ?.copyWith(
+                                                fontSize: 19,
+                                                fontWeight: FontWeight.bold,
+                                                color: textColor,
+                                                decoration: task.isTaken
+                                                    ? TextDecoration.lineThrough
+                                                    : null,
+                                                decorationColor: Colors.white,
+                                              ),
                                         ),
+                                      ),
+                                      // TOMBOL DELETE (Khusus Guardian)
+                                      if (isGuardian)
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.delete_outline,
+                                            color: task.isTaken
+                                                ? Colors.white70
+                                                : Colors.red[300],
+                                            size: 20,
+                                          ),
+                                          padding: EdgeInsets.zero,
+                                          constraints: const BoxConstraints(),
+                                          onPressed: () =>
+                                              _confirmDelete(context, ref),
+                                        ),
+                                    ],
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
@@ -139,57 +176,67 @@ class TimelineTaskItem extends ConsumerWidget {
                         ),
                       ),
 
-                      // ROW BAWAH: Tombol Inset (Di dalam padding)
+                      // Tombol Konfirmasi (Inset Floating)
                       Padding(
                         padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                        child: InkWell(
-                          onTap: () {
-                            // PERBAIKAN: Kirim task.userId sebagai parameter pertama
-                            ref
-                                .read(medicationActionsProvider)
-                                .toggleTaskStatus(
-                                  task.userId, // <--- User ID
-                                  task.id, // <--- Med ID
-                                  task.isTaken, // <--- Status Lama
-                                );
-                          },
-                          borderRadius: BorderRadius.circular(16),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            decoration: BoxDecoration(
-                              color: btnBgColor,
-                              borderRadius: BorderRadius.circular(16),
-                              // Opsional: Shadow halus untuk tombol agar lebih "pop"
-                              boxShadow: task.isTaken
-                                  ? []
-                                  : [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.1,
-                                        ),
-                                        blurRadius: 4,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
+                        child: SizedBox(
+                          width: double.infinity, // Agar tombol memenuhi lebar
+                          child: ElevatedButton(
+                            // LOGIC UTAMA: Jika bukan hari ini, onPressed = null (Disabled)
+                            onPressed: isToday
+                                ? () {
+                                    ref
+                                        .read(medicationActionsProvider)
+                                        .toggleTaskStatus(
+                                          task.userId,
+                                          task.id,
+                                          task.isTaken,
+                                        );
+                                  }
+                                : null, // Ini membuat tombol otomatis disabled
+
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                // Opsional: Tambahkan border abu-abu tipis jika tombol disabled (putih) agar terlihat
+                                side: isToday
+                                    ? BorderSide.none
+                                    : const BorderSide(color: Colors.grey),
+                              ),
+
+                              // WARNA KETIKA AKTIF (HARI INI)
+                              backgroundColor: btnBgColor, // Warna Primary
+                              foregroundColor: task.isTaken
+                                  ? AppColors.textPrimary
+                                  : AppColors.surface, // Teks Putih
+                              // WARNA KETIKA DISABLED (BUKAN HARI INI)
+                              disabledBackgroundColor:
+                                  AppColors.surface, // Button Putih
+                              disabledForegroundColor:
+                                  AppColors.textPrimary, // Teks Hitam
+
+                              elevation: (isToday && !task.isTaken)
+                                  ? 4
+                                  : 0, // Shadow hanya jika belum diminum hari ini
                             ),
+
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(
-                                  task.isTaken
-                                      ? Icons.undo
-                                      : Icons.check_circle_outline,
-                                  color: btnTextColor,
-                                  size: 16,
-                                ),
-                                const SizedBox(width: 8),
+                                // Icon juga logicnya disesuaikan
+                                if (isToday) ...[
+                                  Icon(
+                                    task.isTaken
+                                        ? Icons.undo
+                                        : Icons.check_circle_outline,
+                                    size: 22,
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
                                 Text(
-                                  task.isTaken
-                                      ? "Batalkan"
-                                      : "Konfirmasi Minum",
-                                  style: TextStyle(
-                                    color: btnTextColor,
+                                  buttonText,
+                                  style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 16,
                                   ),
@@ -206,6 +253,33 @@ class TimelineTaskItem extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text("Hapus Obat?"),
+        content: const Text(
+          "Jadwal ini akan dihapus permanen untuk semua tanggal.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Batal"),
+          ),
+          TextButton(
+            onPressed: () {
+              ref
+                  .read(medicationActionsProvider)
+                  .deleteMedication(task.userId, task.id);
+              Navigator.pop(ctx);
+            },
+            child: const Text("Hapus", style: TextStyle(color: Colors.red)),
+          ),
+        ],
       ),
     );
   }

@@ -14,7 +14,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const ProviderScope(child: SilverGuideApp()));
+  runApp(
+
+    const ProviderScope(child: SilverGuideApp())
+    );
 }
 
 class SilverGuideApp extends ConsumerWidget {

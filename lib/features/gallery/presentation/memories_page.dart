@@ -1,7 +1,5 @@
-import 'dart:io'; // Tambahan untuk File
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart'; // Tambahan untuk ambil foto
 import 'package:silver_guide/app/theme/app_theme.dart';
 import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
 
@@ -15,52 +13,54 @@ class MemoriesPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 1. Ambil Data User (FamilyID & UserID)
     final userAsync = ref.watch(profileControllerProvider);
-    final familyId = userAsync.value?.familyId ?? "";
-    final currentUserId = userAsync.value?.id ?? "";
+    final user = userAsync.valueOrNull; // Gunakan valueOrNull agar aman
 
-    // 2. Watch Data Memories (Realtime Firestore)
-    // Jika belum punya familyId, stream akan kosong
+    final familyId = user?.familyId ?? "";
+    final currentUserId = user?.id ?? "";
+
+    // Watch Data
     final asyncMemories = ref.watch(memoryProvider(familyId));
 
     return Scaffold(
       backgroundColor: AppColors.surface,
 
       // Floating Action Button
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          if (familyId.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Silakan gabung keluarga di Settings dulu."),
-              ),
-            );
-            return;
-          }
-          _showWriteDiaryDialog(context, ref, familyId, userAsync.value!);
-        },
-        backgroundColor: AppColors.primary,
-        foregroundColor: AppColors.surface,
-        elevation: 4,
-        child: const Icon(Icons.edit_note, size: 32),
-      ),
-
+      // Pastikan tombol ini selalu dirender, logic validasi ada di onPressed
       body: asyncMemories.when(
         data: (memories) {
-          if (memories.isEmpty) {
-            return Center(
+          if (familyId.isEmpty) {
+            return const Center(
               child: Text(
-                "Belum ada kenangan.\nTulis cerita pertamamu!",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.textSecondary.withValues(alpha: 0.5),
-                ),
+                "Bergabunglah dengan keluarga untuk melihat kenangan.",
               ),
             );
           }
 
-          // Grouping berdasarkan tanggal
+          if (memories.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.photo_album_outlined,
+                    size: 60,
+                    color: AppColors.textSecondary.withOpacity(0.3),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "Belum ada kenangan.\nTulis cerita pertamamu!",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppColors.textSecondary.withOpacity(0.5),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          // Grouping logic (Sama)
           Map<String, List<MemoryPost>> grouped = {};
           for (var post in memories) {
             String dateKey =
@@ -82,12 +82,10 @@ class MemoriesPage extends ConsumerWidget {
                     return _DailyGroupItem(
                       dateKey: dateKey,
                       posts: dailyPosts,
-                      currentUserId:
-                          currentUserId, // Kirim ID untuk cek status like
+                      currentUserId: currentUserId,
                     );
                   }, childCount: grouped.keys.length),
                 ),
-                // Tambahan space di bawah agar item terakhir tidak ketutup FAB/Nav Bar
                 const SliverToBoxAdapter(child: SizedBox(height: 120)),
               ],
             ),
@@ -102,194 +100,6 @@ class MemoriesPage extends ConsumerWidget {
   }
 
   // --- LOGIC DIALOG INPUT JURNAL (Updated with Firebase Logic) ---
-  void _showWriteDiaryDialog(
-    BuildContext context,
-    WidgetRef ref,
-    String familyId,
-    dynamic userProfile,
-  ) {
-    final textController = TextEditingController();
-    File? selectedImage; // State Lokal untuk gambar
-    bool isUploading = false; // State Loading
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      backgroundColor: AppColors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      // Gunakan StatefulBuilder agar bisa update UI di dalam BottomSheet (untuk preview gambar)
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setState) {
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-              left: 20,
-              right: 20,
-              top: 24,
-            ),
-            child: SafeArea(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Tulis Cerita",
-                        style: AppTheme.lightTheme.textTheme.titleLarge,
-                      ),
-                      if (isUploading)
-                        const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      else
-                        IconButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          icon: const Icon(
-                            Icons.close,
-                            color: AppColors.textSecondary,
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: textController,
-                    maxLines: 5,
-                    autofocus: true,
-                    style: AppTheme.lightTheme.textTheme.bodyLarge,
-                    decoration: InputDecoration(
-                      hintText: "Apa yang berkesan hari ini, Ayah/Ibu?",
-                      hintStyle: const TextStyle(color: Colors.black38),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.all(16),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  // PREVIEW GAMBAR JIKA ADA
-                  if (selectedImage != null) ...[
-                    const SizedBox(height: 12),
-                    Stack(
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Image.file(
-                            selectedImage!,
-                            height: 100,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        Positioned(
-                          right: 8,
-                          top: 8,
-                          child: GestureDetector(
-                            onTap: () => setState(() => selectedImage = null),
-                            child: const CircleAvatar(
-                              radius: 12,
-                              backgroundColor: Colors.white,
-                              child: Icon(Icons.close, size: 16),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      // TOMBOL AMBIL FOTO
-                      TextButton.icon(
-                        onPressed: isUploading
-                            ? null
-                            : () async {
-                                final picker = ImagePicker();
-                                final picked = await picker.pickImage(
-                                  source: ImageSource.gallery,
-                                  imageQuality: 70,
-                                );
-                                if (picked != null) {
-                                  setState(() {
-                                    selectedImage = File(picked.path);
-                                  });
-                                }
-                              },
-                        style: TextButton.styleFrom(
-                          foregroundColor: AppColors.primary,
-                        ),
-                        icon: const Icon(Icons.add_photo_alternate_outlined),
-                        label: const Text("Foto"),
-                      ),
-                      const Spacer(),
-                      // TOMBOL SIMPAN KE FIREBASE
-                      ElevatedButton(
-                        onPressed: isUploading
-                            ? null
-                            : () async {
-                                if (textController.text.isNotEmpty ||
-                                    selectedImage != null) {
-                                  setState(() => isUploading = true);
-
-                                  try {
-                                    // Panggil Action Provider
-                                    await ref
-                                        .read(memoryActionsProvider)
-                                        .postMemory(
-                                          familyId: familyId,
-                                          authorId: userProfile.id,
-                                          authorName: userProfile.name,
-                                          content: textController.text,
-                                          imageFile: selectedImage,
-                                        );
-                                    if (ctx.mounted) Navigator.pop(ctx);
-                                  } catch (e) {
-                                    setState(() => isUploading = false);
-                                    if (ctx.mounted) {
-                                      ScaffoldMessenger.of(ctx).showSnackBar(
-                                        SnackBar(content: Text("Gagal: $e")),
-                                      );
-                                    }
-                                  }
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
-                        ),
-                        child: const Text(
-                          "Simpan",
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
 
   String _getMonthName(int month) {
     const months = [
@@ -562,30 +372,32 @@ class _DiaryPostItem extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(16),
-        margin: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: emojis
-              .map(
-                (emoji) => GestureDetector(
-                  onTap: () {
-                    // Panggil Action Provider
-                    ref
-                        .read(memoryActionsProvider)
-                        .reactToPost(familyId, postId, currentUserId, emoji);
-                    Navigator.pop(ctx);
-                  },
-                  child: Text(emoji, style: const TextStyle(fontSize: 32)),
-                ),
-              )
-              .toList(),
+      builder: (ctx) => SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: emojis
+                .map(
+                  (emoji) => GestureDetector(
+                    onTap: () {
+                      // Panggil Action Provider
+                      ref
+                          .read(memoryActionsProvider)
+                          .reactToPost(familyId, postId, currentUserId, emoji);
+                      Navigator.pop(ctx);
+                    },
+                    child: Text(emoji, style: const TextStyle(fontSize: 32)),
+                  ),
+                )
+                .toList(),
+          ),
         ),
       ),
     );

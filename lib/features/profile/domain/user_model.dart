@@ -15,6 +15,7 @@ class UserProfile {
   final String? ageRange; // Tambahan: Dewasa muda, Dewasa mapan, Lansia
   final double textSize; // 0.8: Kecil, 1.0: Normal, 1.2: Besar
   final String? familyId;
+  final List<String> enabledFeatures; 
   final DateTime createdAt; // Tambahan untuk sorting
 
   UserProfile({
@@ -27,6 +28,8 @@ class UserProfile {
     this.ageRange,
     this.textSize = 1.0,
     this.familyId,
+    this.enabledFeatures = const ['health', 'activity', 'memory', 'chat'],
+
     required this.createdAt,
   });
 
@@ -44,6 +47,7 @@ class UserProfile {
       'ageRange': ageRange,
       'textSize': textSize,
       'familyId': familyId,
+      'enabledFeatures': enabledFeatures,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
@@ -61,6 +65,7 @@ class UserProfile {
       ageRange: map['ageRange'],
       textSize: (map['textSize'] as num?)?.toDouble() ?? 1.0,
       familyId: map['familyId'],
+      enabledFeatures: List<String>.from(map['enabledFeatures'] ?? ['health', 'activity', 'memory', 'chat']),
       createdAt: (map['createdAt'] as Timestamp).toDate(),
     );
   }

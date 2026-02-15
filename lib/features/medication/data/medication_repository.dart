@@ -7,7 +7,6 @@ class MedicationRepository {
   MedicationRepository(this._firestore);
 
   // Helper untuk mendapatkan tanggal hari ini dalam format YYYY-MM-DD
-
   String _getDateId(DateTime date) {
     return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
   }
@@ -21,17 +20,49 @@ class MedicationRepository {
   }
 
   // 2. READ: Dapatkan semua obat untuk user + status hari ini (Realtime)
-  Stream<List<MedicationTask>> watchTasksByDate(String userId, DateTime date) {
+  // UPDATED: Dengan Logic Filtering (Google Calendar Style)
+  Stream<List<MedicationTask>> watchTasksByDate(String userId, DateTime selectedDate) {
     final query = _firestore
         .collection('medications')
         .where('userId', isEqualTo: userId);
 
     return query.snapshots().asyncMap((snapshot) async {
       final tasksWithStatus = <MedicationTask>[];
-      final dateId = _getDateId(date); // Gunakan tanggal yang dipilih
+      final dateId = _getDateId(selectedDate);
+
+      // Normalisasi selectedDate ke jam 00:00:00 untuk perbandingan tanggal yang akurat
+      final normalizedSelected = DateTime(selectedDate.year, selectedDate.month, selectedDate.day);
 
       for (final doc in snapshot.docs) {
-        // Cek logs untuk tanggal tersebut
+        // 1. Parsing Data Dasar
+        final data = doc.data();
+        
+        // Ambil data filtering
+        final startDate = (data['startDate'] as Timestamp).toDate();
+        final endDate = data['endDate'] != null 
+            ? (data['endDate'] as Timestamp).toDate() 
+            : null;
+        final frequency = List<int>.from(data['frequency'] ?? []);
+
+        // 2. FILTERING LOGIC
+        
+        // A. Cek Range Tanggal (Start & End)
+        final normalizedStart = DateTime(startDate.year, startDate.month, startDate.day);
+        final normalizedEnd = endDate != null 
+            ? DateTime(endDate.year, endDate.month, endDate.day) 
+            : null;
+
+        // Skip jika tanggal yang dipilih SEBELUM tanggal mulai
+        if (normalizedSelected.isBefore(normalizedStart)) continue;
+        
+        // Skip jika tanggal yang dipilih SETELAH tanggal selesai (jika ada end date)
+        if (normalizedEnd != null && normalizedSelected.isAfter(normalizedEnd)) continue;
+
+        // B. Cek Hari (Frequency)
+        // normalizedSelected.weekday mengembalikan 1 (Senin) s/d 7 (Minggu)
+        if (!frequency.contains(normalizedSelected.weekday)) continue; // Bukan jadwal hari ini
+
+        // 3. Jika Lolos Filter, Ambil Status Harian (Logs)
         final logDoc = await doc.reference.collection('logs').doc(dateId).get();
 
         final bool isTaken = logDoc.exists && logDoc.data()?['isTaken'] == true;
@@ -79,8 +110,7 @@ class MedicationRepository {
   // 5. DELETE: Hapus Obat (Guardian)
   Future<void> deleteMedication(String medId) async {
     await _firestore.collection('medications').doc(medId).delete();
-    // Note: Subcollection 'logs' akan otomatis terhapus (orphan)
-    // Untuk production app, perlu Cloud Function untuk membersihkannya.
+    // Note: Subcollection 'logs' akan otomatis terhapus (orphan) di Firestore
   }
 }
 

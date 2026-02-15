@@ -14,17 +14,26 @@ class RegisterPage extends ConsumerStatefulWidget {
 class _RegisterPageState extends ConsumerState<RegisterPage> {
   final PageController _pageController = PageController();
 
-  // Controllers untuk Input Text
+  // Controllers
   final _emailController = TextEditingController();
   final _passController = TextEditingController();
   final _confirmPassController = TextEditingController();
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
 
-  int _currentStep = 0; // 0, 1, 2
-  String? _selectedRole; // 'elderly' atau 'guardian'
-  String? _selectedAgeRange; // Tambahan
+  int _currentStep = 0; // 0, 1, 2, 3
+  String? _selectedRole;
+  String? _selectedAgeRange;
+
+  // Default semua fitur aktif
+  // Key: 'health', 'activity', 'memory', 'chat'
+  List<String> _selectedFeatures = ['health', 'activity', 'memory', 'chat'];
+
   bool _isLoading = false;
+
+  // Getter untuk menentukan total step dinamis
+  // Jika Elderly: 3 Step (0,1,2). Jika Guardian: 4 Step (0,1,2,3).
+  int get _totalSteps => _selectedRole == 'elderly' ? 3 : 4;
 
   @override
   void dispose() {
@@ -37,9 +46,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     super.dispose();
   }
 
-  // --- Logic Navigasi Wizard ---
+  // --- LOGIC NAVIGASI ---
   void _nextStep() {
-    // Validasi Sederhana sebelum lanjut
+    // Validasi Step 0 (Akun)
     if (_currentStep == 0) {
       if (_emailController.text.isEmpty || _passController.text.isEmpty) {
         _showError("Email dan Kata Sandi wajib diisi.");
@@ -49,7 +58,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         _showError("Konfirmasi kata sandi tidak cocok.");
         return;
       }
-    } else if (_currentStep == 1) {
+    }
+    // Validasi Step 1 (Data Diri)
+    else if (_currentStep == 1) {
       if (_nameController.text.isEmpty) {
         _showError("Nama Lengkap wajib diisi.");
         return;
@@ -59,17 +70,37 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         return;
       }
     }
+    // Validasi Step 2 (Peran) -> Disini Percabangan terjadi
+    else if (_currentStep == 2) {
+      if (_selectedRole == null) {
+        _showError("Silakan pilih peran Anda terlebih dahulu.");
+        return;
+      }
 
-    // Pindah Halaman
-    if (_currentStep < 2) {
+      // JIKA LANSIA: Selesai di sini (Skip Step 4)
+      if (_selectedRole == 'elderly') {
+        _submitRegistration();
+        return;
+      }
+      // JIKA GUARDIAN: Lanjut ke Step 4 (Fitur)
+    }
+    // Validasi Step 3 (Fitur - Khusus Guardian)
+    else if (_currentStep == 3) {
+      if (_selectedFeatures.isEmpty) {
+        _showError("Pilih minimal 1 fitur utama.");
+        return;
+      }
+      _submitRegistration();
+      return;
+    }
+
+    // Pindah Halaman jika belum finish
+    if (_currentStep < _totalSteps - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
       setState(() => _currentStep++);
-    } else {
-      // Step Terakhir: Submit
-      _submitRegistration();
     }
   }
 
@@ -81,20 +112,20 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       );
       setState(() => _currentStep--);
     } else {
-      Navigator.pop(context); // Kembali ke Login
+      Navigator.pop(context);
     }
   }
 
   void _submitRegistration() async {
-    if (_selectedRole == null) {
-      _showError("Silakan pilih peran Anda terlebih dahulu.");
-      return;
-    }
-
     setState(() => _isLoading = true);
 
     try {
-      // Panggil Controller dengan Data Lengkap
+      // Logic: Jika Elderly, paksa enable semua fitur (atau default family)
+      // Jika Guardian, gunakan pilihan dia.
+      final featuresToSend = _selectedRole == 'elderly'
+          ? ['health', 'activity', 'memory', 'chat']
+          : _selectedFeatures;
+
       await ref
           .read(authControllerProvider)
           .register(
@@ -102,13 +133,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             password: _passController.text,
             name: _nameController.text,
             phone: _phoneController.text,
-            roleStr: _selectedRole!, // 'elderly' atau 'guardian'
+            roleStr: _selectedRole!,
             ageRange: _selectedAgeRange,
+            enabledFeatures: featuresToSend, // Kirim fitur terpilih
           );
 
-      // Jika sukses, Auth State akan berubah jadi 'LoggedIn'
-      // Main.dart akan otomatis merubah halaman ke MainNavigationScaffold
-      // Kita perlu memastikan navigasi stack bersih
       if (mounted) {
         setState(() => _isLoading = false);
         Navigator.of(context).popUntil((route) => route.isFirst);
@@ -125,8 +154,27 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     );
   }
 
+  // --- LOGIC TOGGLE FITUR ---
+  void _toggleFeature(String featureKey) {
+    setState(() {
+      if (_selectedFeatures.contains(featureKey)) {
+        // Cegah hapus semua (Minimal 1)
+        if (_selectedFeatures.length > 1) {
+          _selectedFeatures.remove(featureKey);
+        } else {
+          _showError("Minimal 1 fitur harus aktif.");
+        }
+      } else {
+        _selectedFeatures.add(featureKey);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Total dots ditampilkan max 4 biar tidak goyang layoutnya
+    // Tapi logic active-nya mengikuti _currentStep
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -154,7 +202,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           child: Column(
             children: [
               const SizedBox(height: 16),
-              Image.asset('images/2.png', height: 240),
+              // Gambar dinamis? Atau statis saja
+              Image.asset('assets/images/2.png', height: 200),
+
               // 1. Progress Indicator
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -162,12 +212,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   vertical: 16,
                 ),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _buildProgressDot(0),
                     _buildProgressLine(0),
                     _buildProgressDot(1),
                     _buildProgressLine(1),
                     _buildProgressDot(2),
+                    // Garis & Dot ke-4 hanya muncul visualnya jika Guardian atau belum pilih role
+                    if (_selectedRole != 'elderly') ...[
+                      _buildProgressLine(2),
+                      _buildProgressDot(3),
+                    ],
                   ],
                 ),
               ),
@@ -175,18 +231,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
               Expanded(
                 child: PageView(
                   controller: _pageController,
-                  physics:
-                      const NeverScrollableScrollPhysics(), // Disable swipe manual
+                  physics: const NeverScrollableScrollPhysics(),
                   children: [
                     _buildStep1Account(),
                     _buildStep2Personal(),
                     _buildStep3Role(),
+                    _buildStep4Features(), // Halaman Baru
                   ],
                 ),
               ),
 
-              // Tombol Lanjut (Hanya muncul di Step 1 & 2)
-              // Di Step 3 tombolnya menyatu dengan pilihan kartu agar lebih intuitif
+              // Tombol Lanjut (Hanya untuk Step 0 dan 1)
+              // Step 2 & 3 punya tombol khusus di dalam widgetnya
               if (_currentStep < 2)
                 Padding(
                   padding: const EdgeInsets.all(24.0),
@@ -219,9 +275,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     );
   }
 
-  // --- WIDGETS STEPS ---
-
+  // ... (WIDGET Step 1 & 2 SAMA SEPERTI SEBELUMNYA - COPY PASTE KODE ANDA DI SINI) ...
   Widget _buildStep1Account() {
+    // ... Copy from your previous code ...
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -242,7 +298,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             style: TextStyle(fontSize: 18, color: AppColors.textPrimary),
           ),
           const SizedBox(height: 32),
-
           _buildTextField(
             controller: _emailController,
             label: "Email",
@@ -269,6 +324,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   Widget _buildStep2Personal() {
+    // ... Copy from your previous code ...
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -289,7 +345,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             style: TextStyle(fontSize: 18, color: AppColors.textPrimary),
           ),
           const SizedBox(height: 32),
-
           _buildTextField(
             controller: _nameController,
             label: "Nama Lengkap",
@@ -303,7 +358,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             keyboardType: TextInputType.phone,
           ),
           const SizedBox(height: 16),
-          // --- COMBOBOX RENTANG USIA ---
           _buildDropdownField(
             value: _selectedAgeRange,
             label: "Rentang Usia",
@@ -315,16 +369,337 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             ],
             onChanged: (val) => setState(() => _selectedAgeRange = val),
           ),
+        ],
+      ),
+    );
+  }
+
+  // --- STEP 3: PILIH PERAN ---
+  Widget _buildStep3Role() {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Pilih peran.",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+              fontFamily: GoogleFonts.beVietnamPro().fontFamily,
+            ),
+          ),
           const SizedBox(height: 8),
           const Text(
-            "*Nomor HP berguna untuk pemulihan akun jika lupa password.",
-            style: TextStyle(
-              fontSize: 12,
-              color: AppColors.textSecondary,
-              fontStyle: FontStyle.italic,
+            "Bagaimana Anda akan menggunakan aplikasi ini?",
+            style: TextStyle(fontSize: 18, color: AppColors.textPrimary),
+          ),
+          const SizedBox(height: 32),
+
+          _RoleSelectionCard(
+            title: "Pengguna Utama",
+            subtitle: "Saya ingin mencatat kesehatan & kenangan saya sendiri.",
+            icon: Icons.person,
+            color: AppColors.primary,
+            isSelected: _selectedRole == 'elderly',
+            onTap: () => setState(() => _selectedRole = 'elderly'),
+          ),
+          const SizedBox(height: 16),
+          _RoleSelectionCard(
+            title: "Pendamping (Keluarga)",
+            subtitle: "Saya ingin membantu memantau orang tua saya.",
+            icon: Icons.supervised_user_circle,
+            color: AppColors.accent,
+            isSelected: _selectedRole == 'guardian',
+            onTap: () => setState(() => _selectedRole = 'guardian'),
+          ),
+
+          const Spacer(),
+
+          // TOMBOL Lanjut / Selesai (Tergantung Role)
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: _isLoading
+                  ? null
+                  : _nextStep, // Logic Submit/Next ada di _nextStep
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : Text(
+                      _selectedRole == 'elderly'
+                          ? "Selesai & Masuk"
+                          : "Lanjut Atur Fitur",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // --- STEP 4: PILIH FITUR (BARU) ---
+  Widget _buildStep4Features() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Sesuaikan Fitur.",
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+              fontFamily: GoogleFonts.beVietnamPro().fontFamily,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            "Fitur apa yang dibutuhkan orang tua saat ini?",
+            style: TextStyle(fontSize: 18, color: AppColors.textPrimary),
+          ),
+          const SizedBox(height: 24),
+
+          // LIST FITUR
+          _FeatureSelectionCard(
+            keyName: 'health',
+            title: "Kesehatan",
+            subtitle: "Jadwal obat & pantauan medis.",
+            icon: Icons.medication,
+            color: AppColors.primary,
+            isSelected: _selectedFeatures.contains('health'),
+            onTap: () => _toggleFeature('health'),
+          ),
+          const SizedBox(height: 12),
+          _FeatureSelectionCard(
+            keyName: 'activity',
+            title: "Aktivitas",
+            subtitle: "Hobi & kebun kebahagiaan.",
+            icon: Icons.local_florist,
+            color: Colors.green,
+            isSelected: _selectedFeatures.contains('activity'),
+            onTap: () => _toggleFeature('activity'),
+          ),
+          const SizedBox(height: 12),
+          _FeatureSelectionCard(
+            keyName: 'memory',
+            title: "Kenangan",
+            subtitle: "Album foto & jurnal harian.",
+            icon: Icons.photo_library,
+            color: Colors.orange,
+            isSelected: _selectedFeatures.contains('memory'),
+            onTap: () => _toggleFeature('memory'),
+          ),
+          const SizedBox(height: 12),
+          _FeatureSelectionCard(
+            keyName: 'chat',
+            title: "Obrolan",
+            subtitle: "Grup chat keluarga simpel.",
+            icon: Icons.forum,
+            color: Colors.blue,
+            isSelected: _selectedFeatures.contains('chat'),
+            onTap: () => _toggleFeature('chat'),
+          ),
+
+          const SizedBox(height: 32),
+
+          // TOMBOL FINAL
+          SizedBox(
+            width: double.infinity,
+            height: 56,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _submitRegistration,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: _isLoading
+                  ? const CircularProgressIndicator(color: Colors.white)
+                  : const Text(
+                      "Simpan & Selesai",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+      ),
+    );
+  }
+
+  // ... (Widget Helper Lain: _buildProgressDot, _buildTextField, _buildDropdownField, _RoleSelectionCard - SAMA SEPERTI KODE ANDA) ...
+  // Copy paste saja helper widget Anda yang lama di bawah sini agar kode lengkap.
+
+  Widget _buildProgressDot(int index) {
+    bool isActive = index <= _currentStep;
+    // Trik Visual: Jika Elderly, Step 2 (Role) adalah step terakhir.
+    // Jadi dot ke-3 (index 2) harus terlihat "selesai" jika di step itu.
+    return Container(
+      width: 32,
+      height: 32,
+      decoration: BoxDecoration(
+        color: isActive ? AppColors.primary : Colors.grey[300],
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: Text(
+          "${index + 1}",
+          style: TextStyle(
+            color: isActive ? Colors.white : Colors.grey[600],
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProgressLine(int index) {
+    bool isActive = index < _currentStep;
+    return Expanded(
+      child: Container(
+        height: 4,
+        color: isActive ? AppColors.primary : Colors.grey[300],
+      ),
+    );
+  }
+
+  // Helper Card untuk Fitur
+  Widget _FeatureSelectionCard({
+    required String keyName,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withValues(alpha: 0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? color : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.shadow.withValues(alpha: 0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? color.withValues(alpha: 0.2)
+                    : Colors.grey[100],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: isSelected ? color : Colors.grey,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isSelected
+                          ? AppColors.textPrimary
+                          : Colors.grey[600],
+                    ),
+                  ),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: isSelected,
+              onChanged: (val) => onTap(),
+              activeColor: color,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Paste juga _buildTextField, _buildDropdownField, dan _RoleSelectionCard dari kode Anda sebelumnya di sini.
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    bool isPassword = false,
+    TextInputType? keyboardType,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: isPassword,
+        keyboardType: keyboardType,
+        style: GoogleFonts.getFont('Open Sans', color: AppColors.textPrimary),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: GoogleFonts.openSans(color: AppColors.textSecondary),
+          prefixIcon: Icon(icon, color: AppColors.textSecondary),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          filled: true,
+          fillColor: Colors.transparent,
+        ),
       ),
     );
   }
@@ -382,173 +757,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     );
   }
 
-  Widget _buildStep3Role() {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Pilih peran.",
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-              fontFamily: GoogleFonts.beVietnamPro().fontFamily,
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            "Bagaimana Anda akan menggunakan aplikasi ini?",
-            style: TextStyle(fontSize: 18, color: AppColors.textPrimary),
-          ),
-          const SizedBox(height: 32),
-
-          // Pilihan 1: Senior
-          _RoleSelectionCard(
-            title: "Pengguna Utama",
-            subtitle: "Saya ingin mencatat kesehatan & kenangan saya sendiri.",
-            icon: Icons.person,
-            color: AppColors.primary,
-            isSelected: _selectedRole == 'elderly',
-            onTap: () => setState(() => _selectedRole = 'elderly'),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Pilihan 2: Guardian
-          _RoleSelectionCard(
-            title: "Pendamping (Keluarga)",
-            subtitle: "Saya ingin membantu memantau orang tua saya.",
-            icon: Icons.supervised_user_circle,
-            color: AppColors.accent, // Warna Terra Cotta
-            isSelected: _selectedRole == 'guardian',
-            onTap: () => setState(() => _selectedRole = 'guardian'),
-          ),
-
-          const Spacer(),
-
-          // Tombol Finish
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _submitRegistration,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text(
-                      "Selesai & Masuk",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // --- UI COMPONENTS ---
-
-  Widget _buildProgressDot(int index) {
-    bool isActive = index <= _currentStep;
-    return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: isActive ? AppColors.primary : Colors.grey[300],
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Text(
-          "${index + 1}",
-          style: TextStyle(
-            color: isActive ? Colors.white : Colors.grey[600],
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProgressLine(int index) {
-    bool isActive = index < _currentStep;
-    return Expanded(
-      child: Container(
-        height: 4,
-        color: isActive ? AppColors.primary : Colors.grey[300],
-      ),
-    );
-  }
-
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
+  Widget _RoleSelectionCard({
+    required String title,
+    required String subtitle,
     required IconData icon,
-    bool isPassword = false,
-    TextInputType? keyboardType,
+    required Color color,
+    required bool isSelected,
+    required VoidCallback onTap,
   }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: isPassword,
-        keyboardType: keyboardType,
-        style: GoogleFonts.getFont('Open Sans', color: AppColors.textPrimary),
-        decoration: InputDecoration(
-          labelText: label,
-          labelStyle: GoogleFonts.openSans(color: AppColors.textSecondary),
-          prefixIcon: Icon(icon, color: AppColors.textSecondary),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(16),
-            borderSide: BorderSide.none,
-          ),
-          filled: true,
-          fillColor: Colors.transparent,
-        ),
-      ),
-    );
-  }
-}
-
-class _RoleSelectionCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _RoleSelectionCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(

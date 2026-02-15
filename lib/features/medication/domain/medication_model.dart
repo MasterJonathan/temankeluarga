@@ -1,12 +1,19 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class MedicationTask {
   final String id;
   final String userId;
   final String title;
   final String description;
-  final String time;
+  final String time; // "HH:mm"
   final String? imageUrl;
   final bool isTaken;
   final DateTime? takenAt;
+  
+  // --- FITUR BARU ---
+  final DateTime startDate;
+  final DateTime? endDate; // Null = Selamanya
+  final List<int> frequency; // [1, 2, ... 7] (1 = Senin, 7 = Minggu)
 
   MedicationTask({
     required this.id,
@@ -17,27 +24,28 @@ class MedicationTask {
     this.imageUrl,
     this.isTaken = false,
     this.takenAt,
+    required this.startDate,
+    this.endDate,
+    required this.frequency,
   });
 
   Map<String, dynamic> toMap() {
     return {
-      // 'id' tidak perlu disimpan di field, karena sudah jadi ID dokumen
       'userId': userId,
       'title': title,
       'description': description,
       'time': time,
       'imageUrl': imageUrl,
+      // Simpan field baru
+      'startDate': Timestamp.fromDate(startDate),
+      'endDate': endDate != null ? Timestamp.fromDate(endDate!) : null,
+      'frequency': frequency,
     };
   }
 
-  factory MedicationTask.fromMap(
-    String docId,
-    Map<String, dynamic> map,
-    bool isTaskTaken,
-    DateTime? taskTakenAt,
-  ) {
+  factory MedicationTask.fromMap(String docId, Map<String, dynamic> map, bool isTaskTaken, DateTime? taskTakenAt) {
     return MedicationTask(
-      id: docId, // Ambil ID dari dokumen, bukan field
+      id: docId,
       userId: map['userId'] ?? '',
       title: map['title'] ?? '',
       description: map['description'] ?? '',
@@ -45,10 +53,13 @@ class MedicationTask {
       imageUrl: map['imageUrl'],
       isTaken: isTaskTaken,
       takenAt: taskTakenAt,
+      // Load field baru
+      startDate: (map['startDate'] as Timestamp).toDate(),
+      endDate: map['endDate'] != null ? (map['endDate'] as Timestamp).toDate() : null,
+      frequency: List<int>.from(map['frequency'] ?? [1,2,3,4,5,6,7]),
     );
   }
 
-  // --- PERBAIKAN DI SINI ---
   MedicationTask copyWith({
     String? id,
     String? userId,
@@ -62,6 +73,9 @@ class MedicationTask {
       description: description,
       time: time,
       imageUrl: imageUrl,
+      startDate: startDate,
+      endDate: endDate,
+      frequency: frequency,
       isTaken: isTaken ?? this.isTaken,
       takenAt: takenAt ?? this.takenAt,
     );
