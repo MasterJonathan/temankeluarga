@@ -5,6 +5,7 @@ import 'package:silver_guide/app/theme/app_theme.dart';
 import 'package:silver_guide/features/authentication/presentation/auth_controller.dart';
 import 'package:silver_guide/features/profile/domain/user_model.dart';
 import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
+import 'package:silver_guide/services/notification_service.dart';
 import 'package:silver_guide/widgets/edit_profile_sheet.dart';
 import 'package:silver_guide/widgets/feature_management_sheet.dart';
 
@@ -576,6 +577,15 @@ class _GeneralSettingsCard extends StatelessWidget {
               trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
             ),
           ),
+          const Divider(height: 2, color: AppColors.surface),
+
+           OutlinedButton(
+                onPressed: () async {
+                  print("Mencoba kirim notifikasi test...");
+                  await ref.read(notificationServiceProvider).showTestNotification();
+                },
+                child: const Text("Tes Notifikasi Sekarang"),
+              ),
           const Divider(height: 2, color: AppColors.surface),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),

@@ -1,1 +1,37 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"silver-guide","appId":"1:389031362755:android:f71fc39eae624325c52276","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"silver-guide","configurations":{"android":"1:389031362755:android:f71fc39eae624325c52276","web":"1:389031362755:web:0a4c841547624337c52276","windows":"1:389031362755:web:a04f01ad0a7232c6c52276"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "silver-guide",
+          "appId": "1:389031362755:android:f71fc39eae624325c52276",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "silver-guide",
+          "configurations": {
+            "android": "1:389031362755:android:f71fc39eae624325c52276",
+            "web": "1:389031362755:web:0a4c841547624337c52276",
+            "windows": "1:389031362755:web:a04f01ad0a7232c6c52276"
+          }
+        }
+      }
+    }
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "disallowLegacyRuntimeConfig": true,
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ]
+    }
+  ]
+}
