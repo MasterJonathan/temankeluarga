@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:silver_guide/features/memories/presentation/memory_provider.dart';
 import '../data/memory_repository.dart';
@@ -61,7 +62,7 @@ class MemoryActions {
         contextData: "Galeri Keluarga",
       );
     } catch (e) {
-      print("Gagal kirim log memori ke chat: $e");
+      debugPrint("Gagal kirim log memori ke chat: $e");
     }
   }
 
@@ -105,7 +106,7 @@ class MemoryActions {
           });
       
       // Sukses! Data sudah masuk Firestore, UI akan update otomatis via Stream.
-      print("Generate Success: ${result.data}");
+      debugPrint("Generate Success: ${result.data}");
       
     } catch (e) {
       throw Exception("Gagal generate: $e");

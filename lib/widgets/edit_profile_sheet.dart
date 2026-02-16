@@ -54,7 +54,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text("Gagal upload: $e"),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.danger,
             ),
           );
         }
@@ -92,10 +92,10 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          left: 20,
-          right: 20,
-          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          left: 24,
+          right: 24,
+          top: 24,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -117,7 +117,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                           widget.user;
                       return CircleAvatar(
                         radius: 50,
-                        backgroundColor: Colors.grey[200],
+                        backgroundColor: AppColors.surface,
                         child: ClipOval(
                           child: Image.network(
                             currentUser.photoUrl,
@@ -156,16 +156,16 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                         ),
                         child: _isLoading
                             ? const SizedBox(
-                                width: 20,
-                                height: 20,
+                                width: 24,
+                                height: 24,
                                 child: CircularProgressIndicator(
-                                  color: Colors.white,
+                                  color: AppColors.surface,
                                   strokeWidth: 2,
                                 ),
                               )
                             : const Icon(
                                 Icons.camera_alt,
-                                color: Colors.white,
+                                color: AppColors.surface,
                                 size: 20,
                               ),
                       ),
@@ -183,7 +183,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                 labelText: "Nama Lengkap",
                 prefixIcon: const Icon(Icons.person),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
@@ -195,7 +195,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                 labelText: "Nomor HP",
                 prefixIcon: const Icon(Icons.phone),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
             ),
@@ -210,15 +210,15 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
                 child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? const CircularProgressIndicator(color: AppColors.surface)
                     : const Text(
                         "Simpan Perubahan",
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.surface,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),

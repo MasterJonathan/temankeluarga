@@ -3,23 +3,28 @@ import 'package:google_fonts/google_fonts.dart';
 
 class AppColors {
   // Primary (The Anchor) - Dark Olive Green
-  static const Color primary = Color(0xFF8c6754);
+  static const Color primary = Color(0xFF563825);
 
   // Secondary (The Glow) - Muted Gold
-  static const Color secondary = Color(0xFFd9e9ff);
+  static const Color secondary = Color(0xFF90c5e0);
 
   // Accent (The Warmth) - Burnt Sienna
-  static const Color accent = Color(0xFFffded9);
+  static const Color accent = Color(0xFFe090d0);
 
   // Surface (The Paper) - Cream/Off-White
-  static const Color surface = Color(0xFFfffaf8);
+  static const Color surface = Color(0xFFfcf9f8);
+  static const Color secondarySurface = Color(0xFFe3dfde);
 
   // Text (The Ink) - Dark Warm Brown
-  static const Color textPrimary = Color(0xFF47423f);
-  static const Color textSecondary = Color(0xFF47423f);
+  static const Color textPrimary = Color(0xFF070403);
+  static const Color textSecondary = Color(0xFF2c2826);
 
   // Shadow Color
-  static const Color shadow = Color.fromARGB(255, 0, 0, 0);
+  static const Color shadow = Color.fromRGBO(7, 4, 3, 0.08);
+
+  // Other Color
+  static const Color danger = Color(0xFFe94d35);
+
 }
 
 class AppTheme {

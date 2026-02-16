@@ -43,7 +43,7 @@ class MemoryRepository {
           // Mengambil referensi file dari URL public
           await _storage.refFromURL(imageUrl).delete();
         } catch (e) {
-          print("Warning: Gagal menghapus file storage (mungkin sudah hilang): $e");
+          debugPrint("Warning: Gagal menghapus file storage (mungkin sudah hilang): $e");
           // Lanjut saja, jangan throw error agar UI tetap update
         }
       }

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart'; // Import Firestore
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/activity_repository.dart';
 import '../domain/activity_model.dart';
@@ -26,7 +27,7 @@ class ActivityActions {
       await ref.putFile(imageFile);
       return await ref.getDownloadURL();
     } catch (e) {
-      print("Upload Error: $e");
+      debugPrint("Upload Error: $e");
       return null;
     }
   }
@@ -117,7 +118,7 @@ class ActivityActions {
         );
       }
     } catch (e) {
-      print("Gagal kirim log aktivitas: $e");
+      debugPrint("Gagal kirim log aktivitas: $e");
     }
   }
 }

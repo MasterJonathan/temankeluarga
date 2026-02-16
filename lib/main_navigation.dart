@@ -81,7 +81,7 @@ class MainNavigationScaffold extends ConsumerWidget {
                   padding: const EdgeInsets.only(right: 16, left: 8),
                   child: CircleAvatar(
                     radius: 18,
-                    backgroundColor: Colors.grey[300],
+                    backgroundColor: AppColors.secondarySurface,
                     backgroundImage: user.photoUrl.isNotEmpty
                         ? NetworkImage(user.photoUrl)
                         : const NetworkImage("https://cdn-icons-png.flaticon.com/256/149/149071.png"),
@@ -119,10 +119,10 @@ class MainNavigationScaffold extends ConsumerWidget {
             child: FloatingActionButton(
               heroTag: "fab_sos_main",
               elevation: 4,
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.danger,
               shape: const CircleBorder(),
               onPressed: () => _showSosCountdown(context, ref, user),
-              child: const Icon(Icons.sos, size: 28, color: Colors.white),
+              child: const Icon(Icons.sos, size: 28, color: AppColors.surface),
             ),
           ),
 
@@ -208,7 +208,7 @@ class MainNavigationScaffold extends ConsumerWidget {
               padding: EdgeInsets.all(isSelected ? 8 : 0),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? AppColors.primary.withOpacity(0.1)
+                    ? AppColors.primary.withValues(alpha: .1)
                     : Colors.transparent,
                 shape: BoxShape.circle,
               ),
@@ -241,8 +241,9 @@ class MainNavigationScaffold extends ConsumerWidget {
     String? activeProfileId,
   ) {
     if (featureId == 'memory') {
-      if (user.familyId == null || user.familyId!.isEmpty)
+      if (user.familyId == null || user.familyId!.isEmpty) {
         return const SizedBox.shrink();
+      }
       return FloatingActionButton(
         heroTag: "fab_add_memory",
         onPressed: () => showModalBottomSheet(
@@ -255,7 +256,7 @@ class MainNavigationScaffold extends ConsumerWidget {
           ),
         ),
         backgroundColor: AppColors.primary,
-        child: const Icon(Icons.edit_note, color: Colors.white),
+        child: const Icon(Icons.edit_note, color: AppColors.surface),
       );
     }
 
@@ -269,7 +270,7 @@ class MainNavigationScaffold extends ConsumerWidget {
             builder: (ctx) => MedicationFormSheet(userId: activeProfileId),
           ),
           backgroundColor: AppColors.primary,
-          child: const Icon(Icons.add, color: Colors.white),
+          child: const Icon(Icons.add, color: AppColors.surface),
         );
       } else if (featureId == 'activity') {
         return FloatingActionButton(
@@ -277,11 +278,11 @@ class MainNavigationScaffold extends ConsumerWidget {
           onPressed: () => Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddActivityPage(userId: activeProfileId!),
+              builder: (context) => AddActivityPage(userId: activeProfileId),
             ),
           ),
           backgroundColor: AppColors.primary,
-          child: const Icon(Icons.add, color: Colors.white),
+          child: const Icon(Icons.add, color: AppColors.surface),
         );
       }
     }
@@ -294,7 +295,7 @@ class MainNavigationScaffold extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("Sinyal Darurat Terkirim!"),
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.danger,
         duration: Duration(seconds: 2),
       ),
     );

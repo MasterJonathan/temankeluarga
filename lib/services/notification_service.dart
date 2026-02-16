@@ -23,7 +23,7 @@ class NotificationService {
     try {
       tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
     } catch (e) {
-      print("Timezone Error: $e");
+      debugPrint("Timezone Error: $e");
     }
 
     const AndroidInitializationSettings initializationSettingsAndroid =
@@ -35,7 +35,7 @@ class NotificationService {
     await _notificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (details) {
-        print("Notifikasi diklik: ${details.payload}");
+        debugPrint("Notifikasi diklik: ${details.payload}");
       },
     );
 
@@ -50,14 +50,14 @@ class NotificationService {
     );
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('Izin Notifikasi FCM Diberikan');
+      debugPrint('Izin Notifikasi FCM Diberikan');
       
       // A. Upload Token ke Firestore
       await _saveDeviceToken();
       
       // B. Listen Pesan saat App di Depan (Foreground)
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        print("Pesan masuk saat app dibuka: ${message.notification?.title}");
+        debugPrint("Pesan masuk saat app dibuka: ${message.notification?.title}");
         
         // Tampilkan sebagai Notifikasi Lokal (Pop-up)
         // Agar user tau ada chat meski sedang buka app
@@ -100,10 +100,10 @@ class NotificationService {
             .update({
               'fcmTokens': FieldValue.arrayUnion([token]), 
             });
-        print("Device Token Saved: $token");
+        debugPrint("Device Token Saved: $token");
       }
     } catch (e) {
-      print("Gagal simpan token FCM: $e");
+      debugPrint("Gagal simpan token FCM: $e");
     }
   }
 
@@ -153,11 +153,11 @@ class NotificationService {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
     }
 
-    print("--- DEBUG JADWAL NOTIFIKASI ---");
-    print("ID: $id");
-    print("Waktu Sekarang: $now");
-    print("Jadwal: $scheduledDate");
-    print("-------------------------------");
+    debugPrint("--- DEBUG JADWAL NOTIFIKASI ---");
+    debugPrint("ID: $id");
+    debugPrint("Waktu Sekarang: $now");
+    debugPrint("Jadwal: $scheduledDate");
+    debugPrint("-------------------------------");
 
     try {
       await _notificationsPlugin.zonedSchedule(
@@ -185,9 +185,9 @@ class NotificationService {
             UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.time,
       );
-      print("SUKSES MENJADWALKAN ke System Android");
+      debugPrint("SUKSES MENJADWALKAN ke System Android");
     } catch (e) {
-      print("GAGAL MENJADWALKAN: $e");
+      debugPrint("GAGAL MENJADWALKAN: $e");
       // Biasanya error karena permission 'SCHEDULE_EXACT_ALARM' belum allow
     }
   }

@@ -20,7 +20,7 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
 
   // State Pilihan
   String _selectedIconKey = 'flower';
-  Color _selectedColor = AppColors.primary;
+  final Color _selectedColor = AppColors.primary;
 
   // State Gambar
   File? _customImageFile; // Jika user ambil dari galeri
@@ -177,7 +177,7 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -206,7 +206,7 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
                               width: 160,
                               margin: const EdgeInsets.only(right: 12),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: AppColors.surface,
                                 borderRadius: BorderRadius.circular(16),
                                 border: isSelected
                                     ? Border.all(
@@ -216,7 +216,7 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
                                     : Border.all(color: Colors.transparent),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.shadow.withOpacity(0.05),
+                                    color: AppColors.shadow,
                                     blurRadius: 8,
                                     offset: const Offset(0, 4),
                                   ),
@@ -324,7 +324,7 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
                                   alignment: Alignment.topRight,
                                   child: IconButton(
                                     icon: const CircleAvatar(
-                                      backgroundColor: Colors.white,
+                                      backgroundColor: AppColors.surface,
                                       radius: 14,
                                       child: Icon(Icons.edit, size: 16),
                                     ),
@@ -335,7 +335,7 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
 
                     TextField(
                       controller: _titleController,
@@ -344,10 +344,10 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
                         hintText: "Contoh: Jalan Pagi",
                         prefixIcon: const Icon(Icons.assignment_outlined),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: AppColors.surface,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -358,10 +358,10 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
                         hintText: "Contoh: Sehat selalu!",
                         prefixIcon: const Icon(Icons.auto_awesome_outlined),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(8),
                         ),
                         filled: true,
-                        fillColor: Colors.white,
+                        fillColor: AppColors.surface,
                       ),
                     ),
 
@@ -374,20 +374,20 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
                         color: AppColors.textSecondary,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
 
                     Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
+                      spacing: 8,
+                      runSpacing: 8,
                       children: _iconOptions.entries.map((e) {
                         final isSelected = _selectedIconKey == e.key;
                         return ChoiceChip(
                           label: Icon(
                             e.value,
                             color: isSelected
-                                ? Colors.white
+                                ? AppColors.surface
                                 : AppColors.primary,
-                            size: 20,
+                            size: 24,
                           ),
                           selected: isSelected,
                           selectedColor: AppColors.primary,
@@ -413,14 +413,14 @@ class _AddActivityPageState extends ConsumerState<AddActivityPage> {
                         child: const Text(
                           "Simpan Aktivitas",
                           style: TextStyle(
-                            color: Colors.white,
+                            color: AppColors.surface,
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),

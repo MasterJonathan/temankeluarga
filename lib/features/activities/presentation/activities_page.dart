@@ -54,12 +54,12 @@ class _GuardianActivityDashboard extends ConsumerWidget {
         }
 
         return ListView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(24),
           children: [
             Text(
               "Kebun Keluarga",
               style: AppTheme.lightTheme.textTheme.displayMedium?.copyWith(
-                color: AppColors.primary,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
@@ -86,63 +86,127 @@ class _ActivitySummaryCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final progress = ref.watch(activityProgressProvider(member.id));
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 16),
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: InkWell(
-        onTap: () =>
-            ref.read(viewedElderlyIdProvider.notifier).state = member.id,
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              AnimatedScale(
-                scale: 0.8 + (progress * 0.2),
-                duration: const Duration(seconds: 1),
-                child: Icon(
-                  progress == 1.0 ? Icons.park : Icons.forest_outlined,
-                  size: 50,
-                  color: progress > 0.5 ? AppColors.primary : Colors.grey,
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+        // Menggunakan warna secondary sebagai border agar senada dengan tema energi
+        border: Border.all(color: AppColors.primary, width: 1),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () =>
+              ref.read(viewedElderlyIdProvider.notifier).state = member.id,
+          child: Padding(
+            padding: const EdgeInsets.all(
+              16,
+            ), // Padding disamakan dengan pedoman (16)
+            child: Row(
+              children: [
+                // Bagian Ikon (Konten dari Target, Ukuran disesuaikan Pedoman)
+                SizedBox(
+                  width:
+                      64, // Lebar disamakan dengan radius CircleAvatar (32*2)
+                  height: 64,
+                  child: Center(
+                    child: AnimatedScale(
+                      scale: 0.8 + (progress * 0.2),
+                      duration: const Duration(seconds: 1),
+                      child: Icon(
+                        progress == 1.0 ? Icons.park : Icons.forest_outlined,
+                        size: 40, // Sedikit diperkecil agar pas di area 64x64
+                        color: progress > 0.5
+                            ? AppColors.primary
+                            : AppColors.secondarySurface,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      member.name,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        member.name,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          // Asumsi ada warna text primary
+                          color: AppColors.textPrimary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      "${(progress * 100).toInt()}% Energi",
-                      style: TextStyle(
-                        color: AppColors.secondary,
-                        fontWeight: FontWeight.bold,
+                      const SizedBox(height: 8),
+
+                      // Custom Progress Bar (Style dari Pedoman)
+                      Stack(
+                        children: [
+                          Container(
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color:
+                                  AppColors.secondarySurface, // Background bar
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                          ),
+                          FractionallySizedBox(
+                            widthFactor: progress.clamp(
+                              0.0,
+                              1.0,
+                            ), // Safety clamp
+                            child: Container(
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary, // Warna progress bar
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: progress,
-                        color: AppColors.secondary,
-                        backgroundColor: Colors.grey[200],
-                        minHeight: 6,
+
+                      const SizedBox(height: 8),
+
+                      // Metadata Text (Energi) - Layout mengikuti pedoman
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "${(progress * 100).toInt()}% Energi",
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color:
+                                  AppColors.primary, // Warna text disesuaikan
+                            ),
+                          ),
+                          // Opsional: Jika ingin badge status seperti pedoman,
+                          // bisa ditambahkan di sini. Jika tidak, biarkan kosong
+                          // atau hapus Row ini jika ingin rata kiri saja.
+                        ],
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-            ],
+                const SizedBox(width: 16),
+                // Ikon Arrow (Style dari Pedoman)
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 18,
+                  color: AppColors.textSecondary,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -211,7 +275,7 @@ class _DetailActivityView extends ConsumerWidget {
               );
             }
             return SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               sliver: SliverGrid(
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
@@ -283,15 +347,15 @@ class _ActivityCard extends ConsumerWidget {
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeOutBack,
         decoration: BoxDecoration(
-          color: isDone ? item.color : Colors.white,
-          borderRadius: BorderRadius.circular(24),
+          color: isDone ? item.color : AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
-            BoxShadow(
-              color: isDone ? item.color.withOpacity(0.4) : Colors.black12,
-              blurRadius: isDone ? 16 : 8,
-              offset: Offset(0, isDone ? 8 : 4),
-            ),
-          ],
+              BoxShadow(
+                color: AppColors.shadow,
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
         ),
         child: SizedBox(
           width: double.infinity,
@@ -300,32 +364,52 @@ class _ActivityCard extends ConsumerWidget {
             children: [
               // CONTENT UTAMA
               Container(
-                // Opsional: Bungkus Column dengan Container width infinity
-                // agar area Column memenuhi lebar kartu (bagus untuk alignment text)
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                ), // Pindahkan padding text ke sini
+                  horizontal: 16,
+                  vertical: 24,
+                ), // Padding diperbesar agar tidak sesak
+                decoration: BoxDecoration(
+                  color: isDone ? AppColors.secondary : AppColors.surface,
+                  borderRadius: BorderRadius.circular(
+                    16,
+                  ), // Radius disamakan 20
+                  // BORDER: Hanya untuk yang belum selesai (agar ada outline)
+                  border: Border.all(
+                    color: AppColors.secondary,
+                    width: 1,
+                  ),
+
+                  // SHADOW: Disamakan dengan style sebelumnya
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.shadow,
+                      blurRadius: 15,
+                      offset: const Offset(0, 5),
+                    ),
+                  ],
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment
-                      .center, // Pastikan anak-anak column di tengah
                   children: [
                     // GAMBAR ATAU IKON
                     _buildImageOrIcon(isDone),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12), // Jarak disesuaikan sedikit
 
-                    // Text tidak perlu padding horizontal lagi jika parent sudah ada padding
                     Text(
                       item.title,
                       textAlign: TextAlign.center,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
+                      style: TextStyle(
+                        // Menggunakan TextStyle manual agar konsisten
                         fontSize: 16,
-                        color: isDone ? Colors.white : AppColors.textPrimary,
-                        fontWeight: isDone ? FontWeight.bold : FontWeight.w600,
+                        // Warna teks menyesuaikan background
+                        color: isDone
+                            ? AppColors.surface
+                            : AppColors.textPrimary,
+                        fontWeight: FontWeight.bold, // Konsisten bold
                       ),
                     ),
                   ],
@@ -342,12 +426,12 @@ class _ActivityCard extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.8),
+                        color: AppColors.surface.withValues(alpha: 0.8),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
                         Icons.delete_outline,
-                        color: Colors.red[300],
+                        color: AppColors.danger,
                         size: 18,
                       ),
                     ),
@@ -368,7 +452,7 @@ class _ActivityCard extends ConsumerWidget {
         height: 104,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: Colors.white,
+          color: AppColors.surface,
           image: DecorationImage(
             image: NetworkImage(item.customImage!),
             fit: BoxFit.cover,
@@ -377,7 +461,7 @@ class _ActivityCard extends ConsumerWidget {
         ),
         child: isDone
             ? const Center(
-                child: Icon(Icons.check, color: Colors.white, size: 40),
+                child: Icon(Icons.check, color: AppColors.surface, size: 40),
               )
             : null,
       );
@@ -390,7 +474,7 @@ class _ActivityCard extends ConsumerWidget {
         height: 104,
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Stack(
@@ -414,14 +498,14 @@ class _ActivityCard extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: isDone
-            ? Colors.white.withOpacity(0.2)
-            : item.color.withOpacity(0.1),
+            ? AppColors.surface.withValues(alpha: 0.2)
+            : item.color.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
       child: Icon(
         item.icon,
         size: 40,
-        color: isDone ? Colors.white : item.color,
+        color: isDone ? AppColors.surface : item.color,
       ),
     );
   }
@@ -444,7 +528,7 @@ class _ActivityCard extends ConsumerWidget {
                   .deleteActivity(item.userId, item.id);
               Navigator.pop(ctx);
             },
-            child: const Text("Hapus", style: TextStyle(color: Colors.red)),
+            child: const Text("Hapus", style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -495,13 +579,13 @@ class _FamilyTreeHeader extends StatelessWidget {
                 color: AppColors.textPrimary,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             ClipRRect(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(8),
               child: LinearProgressIndicator(
                 value: progress,
                 minHeight: 12,
-                backgroundColor: Colors.white,
+                backgroundColor: AppColors.surface,
                 color: AppColors.secondary,
               ),
             ),

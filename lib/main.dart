@@ -17,7 +17,7 @@ import 'package:silver_guide/services/notification_service.dart';
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   // Anda bisa melakukan inisialisasi firebase core di sini jika perlu akses DB
   // Tapi untuk sekadar menampilkan notif, Android/iOS otomatis menanganinya jika payload ada 'notification'
-  print("Handling background message: ${message.messageId}");
+  debugPrint("Handling background message: ${message.messageId}");
 }
 
 
@@ -45,7 +45,7 @@ class SilverGuideApp extends ConsumerWidget {
     final double textSize = asyncUserProfile.when(
       data: (user) => user.textSize,
       loading: () => 1.0,
-      error: (_, __) => 1.0,
+      error: (_, _) => 1.0,
     );
 
     return MaterialApp(

@@ -5,7 +5,6 @@ import 'package:silver_guide/app/theme/app_theme.dart';
 import 'package:silver_guide/features/authentication/presentation/auth_controller.dart';
 import 'package:silver_guide/features/profile/domain/user_model.dart';
 import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
-import 'package:silver_guide/services/notification_service.dart';
 import 'package:silver_guide/widgets/edit_profile_sheet.dart';
 import 'package:silver_guide/widgets/feature_management_sheet.dart';
 
@@ -24,55 +23,57 @@ class SettingsPage extends ConsumerWidget {
         backgroundColor: AppColors.surface,
         elevation: 0,
       ),
-      body: asyncUser.when(
-        data: (user) => SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Column(
-            children: [
-              _ProfileHeaderCard(user: user),
-              const SizedBox(height: 24),
-
-              // Bagian Keluarga
-              const _SectionTitle(title: "KELUARGA"),
-              _FamilyConnectionCard(user: user),
-
-              const SizedBox(height: 24),
-              
-              // Bagian Fitur (Khusus Guardian)
-              if (user.role == UserRole.guardian && user.familyId != null) ...[
-                const _SectionTitle(title: "KONFIGURASI"),
-                _FeatureSettingsCard(user: user),
+      body: SafeArea(
+        child: asyncUser.when(
+          data: (user) => SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            child: Column(
+              children: [
+                _ProfileHeaderCard(user: user),
                 const SizedBox(height: 24),
-              ],
-
-              // Pengaturan Umum
-              const _SectionTitle(title: "UMUM"),
-              _GeneralSettingsCard(user: user, ref: ref),
-
-              const SizedBox(height: 40),
-
-              // Tombol Logout
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton.icon(
-                  onPressed: () => _showLogoutDialog(context, ref),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.red[700],
-                    side: BorderSide(color: Colors.red.shade200),
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                    backgroundColor: Colors.red.withOpacity(0.02),
+        
+                // Bagian Keluarga
+                const _SectionTitle(title: "KELUARGA"),
+                _FamilyConnectionCard(user: user),
+        
+                const SizedBox(height: 24),
+                
+                // Bagian Fitur (Khusus Guardian)
+                if (user.role == UserRole.guardian && user.familyId != null) ...[
+                  const _SectionTitle(title: "KONFIGURASI"),
+                  _FeatureSettingsCard(user: user),
+                  const SizedBox(height: 24),
+                ],
+        
+                // Pengaturan Umum
+                const _SectionTitle(title: "UMUM"),
+                _GeneralSettingsCard(user: user, ref: ref),
+        
+                const SizedBox(height: 40),
+        
+                // Tombol Logout
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _showLogoutDialog(context, ref),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.surface,
+                      side: BorderSide(color: AppColors.danger),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      backgroundColor: AppColors.danger,
+                    ),
+                    icon: const Icon(Icons.logout, size: 20),
+                    label: const Text("Keluar Akun", style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
-                  icon: const Icon(Icons.logout, size: 20),
-                  label: const Text("Keluar Akun", style: TextStyle(fontWeight: FontWeight.bold)),
                 ),
-              ),
-              const SizedBox(height: 40),
-            ],
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
+          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          error: (err, _) => Center(child: Text("Error: $err")),
         ),
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
-        error: (err, _) => Center(child: Text("Error: $err")),
       ),
     );
   }
@@ -98,7 +99,7 @@ class SettingsPage extends ConsumerWidget {
                 Navigator.of(context).popUntil((route) => route.isFirst);
               }
             },
-            child: const Text("Keluar", style: TextStyle(color: Colors.red)),
+            child: const Text("Keluar", style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -118,16 +119,16 @@ class _FamilyConnectionCard extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: AppColors.shadow.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: AppColors.shadow.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         children: [
           if (hasFamily) ...[
             // 1. Header Kode Keluarga
             ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               leading: const Icon(Icons.vpn_key_outlined, color: AppColors.textSecondary),
               title: const Text("Kode Keluarga"),
               subtitle: Text(
@@ -154,9 +155,9 @@ class _FamilyConnectionCard extends ConsumerWidget {
             if (isGuardian) ...[
               const Divider(height: 2, color: AppColors.surface),
               ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
-                leading: const Icon(Icons.exit_to_app, color: Colors.red),
-                title: const Text("Keluar dari keluarga", style: TextStyle(color: Colors.red, fontWeight: FontWeight.w500)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                leading: const Icon(Icons.exit_to_app, color: AppColors.danger),
+                title: const Text("Keluar dari keluarga", style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w500)),
                 onTap: () => _showLeaveDialog(context, ref),
               ),
             ],
@@ -180,17 +181,17 @@ class _FamilyConnectionCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Padding(
-              padding: EdgeInsets.fromLTRB(20, 16, 20, 8),
+              padding: EdgeInsets.fromLTRB(24, 16, 24, 8),
               child: Text("Anggota", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
             ),
             ...members.map((member) => ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
               leading: CircleAvatar(backgroundImage: NetworkImage(member.photoUrl), radius: 16),
               title: Text(member.name + (member.id == currentUser.id ? " (Anda)" : ""), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
               subtitle: Text(member.role == UserRole.guardian ? "Pendamping" : "Pengguna Utama", style: const TextStyle(fontSize: 12)),
               trailing: (currentUser.role == UserRole.guardian && member.id != currentUser.id)
                   ? IconButton(
-                      icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                      icon: const Icon(Icons.remove_circle_outline, color: AppColors.danger),
                       onPressed: () => _showKickDialog(context, ref, member),
                     )
                   : null,
@@ -198,8 +199,8 @@ class _FamilyConnectionCard extends ConsumerWidget {
           ],
         );
       },
-      loading: () => const Padding(padding: EdgeInsets.all(20), child: Center(child: CircularProgressIndicator())),
-      error: (_, __) => const SizedBox(),
+      loading: () => const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator())),
+      error: (_, _) => const SizedBox(),
     );
   }
 
@@ -214,8 +215,8 @@ class _FamilyConnectionCard extends ConsumerWidget {
           children: [
             Container(
               width: double.infinity,
-              color: Colors.orange.withOpacity(0.1),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              color: Colors.orange.withValues(alpha: 0.1),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
               child: const Text("Menunggu Persetujuan", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 12)),
             ),
             ...requests.map((req) => ListTile(
@@ -230,7 +231,7 @@ class _FamilyConnectionCard extends ConsumerWidget {
                     onPressed: () => ref.read(profileControllerProvider.notifier).acceptMember(req.id),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.cancel, color: Colors.red),
+                    icon: const Icon(Icons.cancel, color: AppColors.danger),
                     onPressed: () => ref.read(profileControllerProvider.notifier).removeMember(req.id),
                   ),
                 ],
@@ -241,7 +242,7 @@ class _FamilyConnectionCard extends ConsumerWidget {
         );
       },
       loading: () => const SizedBox(),
-      error: (_, __) => const SizedBox(),
+      error: (_, _) => const SizedBox(),
     );
   }
 
@@ -270,7 +271,7 @@ class _FamilyConnectionCard extends ConsumerWidget {
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal: $e"), backgroundColor: Colors.red));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal: $e"), backgroundColor: AppColors.danger));
                 }
               }
             },
@@ -322,7 +323,7 @@ class _FamilyConnectionCard extends ConsumerWidget {
         TextButton(onPressed: () {
           ref.read(profileControllerProvider.notifier).removeMember(member.id);
           Navigator.pop(ctx);
-        }, child: const Text("Keluarkan", style: TextStyle(color: Colors.red))),
+        }, child: const Text("Keluarkan", style: TextStyle(color: AppColors.danger))),
       ],
     ));
   }
@@ -359,13 +360,13 @@ class _FamilyConnectionCard extends ConsumerWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text("Gagal: $e"),
-                      backgroundColor: Colors.red,
+                      backgroundColor: AppColors.danger,
                     ),
                   );
                 }
               }
             },
-            child: const Text("Keluar", style: TextStyle(color: Colors.red)),
+            child: const Text("Keluar", style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),
@@ -382,12 +383,12 @@ class _FeatureSettingsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: AppColors.shadow.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: AppColors.shadow.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         leading: const Icon(Icons.tune, color: AppColors.primary),
         title: const Text("Atur Fitur Lansia"),
         subtitle: const Text("Aktifkan/Nonaktifkan menu"),
@@ -402,7 +403,7 @@ class _FeatureSettingsCard extends StatelessWidget {
   void _showFeatureDialog(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
       builder: (ctx) => const ElderlySelectorSheet(), // <--- PANGGIL SHEET BARU DI SINI
     );
   }
@@ -444,7 +445,7 @@ class _ProfileHeaderCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withOpacity(0.05),
+            color: AppColors.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -455,7 +456,7 @@ class _ProfileHeaderCard extends StatelessWidget {
           Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
+              border: Border.all(color: AppColors.surface, width: 2),
             ),
             child: CircleAvatar(
               radius: 32,
@@ -473,7 +474,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.primary,
+                          color: AppColors.surface,
                         ),
                       ),
                     );
@@ -482,7 +483,7 @@ class _ProfileHeaderCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 24),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -500,15 +501,15 @@ class _ProfileHeaderCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(10),
+                    color: AppColors.surface.withValues(alpha: 0.32),
+                    borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     user.role == UserRole.guardian
                         ? "Pendamping (Anak)"
                         : "Pengguna Utama",
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.surface,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -525,7 +526,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                 builder: (ctx) => EditProfileSheet(user: user),
               );
             },
-            icon: const Icon(Icons.edit, color: Colors.white),
+            icon: const Icon(Icons.edit, color: AppColors.surface),
           ),
         ],
       ),
@@ -548,11 +549,11 @@ class _GeneralSettingsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withOpacity(0.05),
+            color: AppColors.shadow.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -560,35 +561,8 @@ class _GeneralSettingsCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 6,
-            ),
-            leading: const Icon(
-              Icons.notifications_outlined,
-              color: AppColors.textSecondary,
-            ),
-            title: const Text("Notifikasi"),
-            trailing: Switch(
-              value: true,
-              onChanged: (v) {},
-              activeTrackColor: AppColors.primary,
-              trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
-            ),
-          ),
-          const Divider(height: 2, color: AppColors.surface),
-
-           OutlinedButton(
-                onPressed: () async {
-                  print("Mencoba kirim notifikasi test...");
-                  await ref.read(notificationServiceProvider).showTestNotification();
-                },
-                child: const Text("Tes Notifikasi Sekarang"),
-              ),
-          const Divider(height: 2, color: AppColors.surface),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -616,7 +590,7 @@ class _GeneralSettingsCard extends StatelessWidget {
                     activeTrackColor: AppColors.primary,
                     inactiveTrackColor: AppColors.surface,
                     thumbColor: AppColors.primary,
-                    overlayColor: AppColors.primary.withOpacity(0.1),
+                    overlayColor: AppColors.primary.withValues(alpha: 0.1),
                     valueIndicatorColor: AppColors.primary,
                   ),
                   child: Slider(

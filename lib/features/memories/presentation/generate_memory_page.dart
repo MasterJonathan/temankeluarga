@@ -59,7 +59,7 @@ class _GenerateMemoryPageState extends ConsumerState<GenerateMemoryPage> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e"), backgroundColor: Colors.red),
+          SnackBar(content: Text("Error: $e"), backgroundColor: AppColors.danger),
         );
       }
     } finally {
@@ -95,7 +95,7 @@ class _GenerateMemoryPageState extends ConsumerState<GenerateMemoryPage> {
                   color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               const Text(
                 "Pilih tanggal. AI akan mengumpulkan foto dan cerita di tanggal tersebut, lalu menyusunnya menjadi satu halaman scrapbook yang cantik.", // Deskripsi baru
                 textAlign: TextAlign.center,
@@ -115,7 +115,7 @@ class _GenerateMemoryPageState extends ConsumerState<GenerateMemoryPage> {
                   decoration: BoxDecoration(
                     border: Border.all(color: AppColors.primary),
                     borderRadius: BorderRadius.circular(16),
-                    color: Colors.white,
+                    color: AppColors.surface,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -125,7 +125,7 @@ class _GenerateMemoryPageState extends ConsumerState<GenerateMemoryPage> {
                         Icons.calendar_today,
                         color: AppColors.primary,
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 16),
                       Text(
                         DateFormat('dd MMMM yyyy').format(_selectedDate),
                         style: const TextStyle(
