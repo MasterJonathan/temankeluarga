@@ -5,14 +5,21 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter/material.dart';
 import 'dart:io'; // Untuk Platform check
 
+// Import Tambahan
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 class NotificationService {
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
+  
+  // Instance FCM
+  final FirebaseMessaging _fcm = FirebaseMessaging.instance;
 
   Future<void> init() async {
+    // 1. Init Timezone & Local Settings (Kode Lama)
     tz.initializeTimeZones();
-    // HARDCODE KE WIB (ASIA/JAKARTA) UNTUK TESTING
-    // Pastikan ini sesuai lokasi Anda
     try {
       tz.setLocalLocation(tz.getLocation('Asia/Jakarta'));
     } catch (e) {
@@ -22,7 +29,6 @@ class NotificationService {
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    // Tambahkan pengaturan Linux/iOS jika perlu (kosongkan dulu)
     const InitializationSettings initializationSettings =
         InitializationSettings(android: initializationSettingsAndroid);
 
@@ -33,8 +39,36 @@ class NotificationService {
       },
     );
 
-    // --- REQUEST PERMISSION EXPLICITLY ---
+    // 2. Request Permissions (Local + FCM)
     await _requestPermissions();
+
+    // 3. Init Firebase Messaging (Kode Baru)
+    NotificationSettings settings = await _fcm.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      print('Izin Notifikasi FCM Diberikan');
+      
+      // A. Upload Token ke Firestore
+      await _saveDeviceToken();
+      
+      // B. Listen Pesan saat App di Depan (Foreground)
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        print("Pesan masuk saat app dibuka: ${message.notification?.title}");
+        
+        // Tampilkan sebagai Notifikasi Lokal (Pop-up)
+        // Agar user tau ada chat meski sedang buka app
+        if (message.notification != null) {
+          showLocalNotification(
+            title: message.notification!.title ?? "Pesan Baru",
+            body: message.notification!.body ?? "",
+          );
+        }
+      });
+    }
   }
 
   Future<void> _requestPermissions() async {
@@ -49,6 +83,50 @@ class NotificationService {
       await androidImplementation?.requestExactAlarmsPermission();
     }
   }
+
+  // --- FCM METHODS (BARU) ---
+
+  // Simpan Token HP ke Database User
+  Future<void> _saveDeviceToken() async {
+    try {
+      String? token = await _fcm.getToken();
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (token != null && user != null) {
+        // Simpan di field array agar 1 user bisa punya banyak HP (multi-device)
+        await FirebaseFirestore.instance
+            .collection('users')
+            .doc(user.uid)
+            .update({
+              'fcmTokens': FieldValue.arrayUnion([token]), 
+            });
+        print("Device Token Saved: $token");
+      }
+    } catch (e) {
+      print("Gagal simpan token FCM: $e");
+    }
+  }
+
+  // Fungsi helper untuk menampilkan notif dari FCM ke UI (Chat)
+  Future<void> showLocalNotification({required String title, required String body}) async {
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'chat_channel', // Channel ID Khusus Chat
+      'Obrolan Keluarga',
+      channelDescription: 'Notifikasi pesan baru',
+      importance: Importance.max,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    await _notificationsPlugin.show(
+      DateTime.now().millisecond, // ID Random
+      title,
+      body,
+      const NotificationDetails(android: androidDetails),
+    );
+  }
+
+  // --- LOCAL NOTIFICATION METHODS (LAMA) ---
 
   Future<void> scheduleMedication({
     required int id,
@@ -89,13 +167,12 @@ class NotificationService {
         scheduledDate,
         const NotificationDetails(
           android: AndroidNotificationDetails(
-            'medication_channel_v2', // <--- GANTI ID INI (Misal tambah _v2)
-            'Jadwal Obat Penting',   // <--- GANTI NAMA JUGA
+            'medication_channel_v2', // Channel ID Obat
+            'Jadwal Obat Penting',   
             channelDescription: 'Alarm bunyi untuk jadwal minum obat',
             importance: Importance.max,
             priority: Priority.high,
             playSound: true,
-            // Pastikan icon ini benar. Jika ragu, pakai mipmap/ic_launcher
             icon: '@mipmap/ic_launcher', 
             
             // TAMBAHAN AGAR LEBIH AGRESIF:
