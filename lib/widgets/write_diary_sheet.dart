@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:silver_guide/app/theme/app_theme.dart';
-import 'package:silver_guide/features/gallery/presentation/memory_actions.dart';
+import 'package:silver_guide/features/memories/presentation/memory_actions.dart';
 
 class WriteDiarySheet extends ConsumerStatefulWidget {
   final String familyId;

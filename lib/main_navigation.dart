@@ -5,8 +5,10 @@ import 'package:silver_guide/app/theme/app_theme.dart';
 // Import Feature Pages
 import 'package:silver_guide/features/activities/presentation/activities_page.dart';
 import 'package:silver_guide/features/activities/presentation/add_activity_page.dart';
+import 'package:silver_guide/features/family_chat/domain/chat_model.dart';
+import 'package:silver_guide/features/family_chat/presentation/chat_actions.dart';
 import 'package:silver_guide/features/family_chat/presentation/family_chat_page.dart';
-import 'package:silver_guide/features/gallery/presentation/memories_page.dart';
+import 'package:silver_guide/features/memories/presentation/memories_page.dart';
 import 'package:silver_guide/features/medication/presentation/health_page.dart';
 
 // Import Profile & State
@@ -119,7 +121,7 @@ class MainNavigationScaffold extends ConsumerWidget {
               elevation: 4,
               backgroundColor: Colors.red,
               shape: const CircleBorder(),
-              onPressed: () => _showSosCountdown(context),
+              onPressed: () => _showSosCountdown(context, ref, user),
               child: const Icon(Icons.sos, size: 28, color: Colors.white),
             ),
           ),
@@ -286,14 +288,27 @@ class MainNavigationScaffold extends ConsumerWidget {
     return const SizedBox.shrink();
   }
 
-  void _showSosCountdown(BuildContext context) {
+  void _showSosCountdown(BuildContext context, WidgetRef ref, UserProfile user) { 
+    // Note: Tambahkan parameter ref dan user
+    
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
-        content: Text("Sinyal Darurat Terkirim! (Simulasi)"),
+        content: Text("Sinyal Darurat Terkirim!"),
         backgroundColor: Colors.red,
         duration: Duration(seconds: 2),
       ),
     );
+
+    // --- LOGIC CHAT SOS ---
+    if (user.familyId != null && user.familyId!.isNotEmpty) {
+      ref.read(chatActionsProvider).sendSystemMessage(
+        familyId: user.familyId!,
+        senderId: user.id,
+        senderName: user.name,
+        text: "🚨 MENEKAN TOMBOL SOS! BUTUH BANTUAN!",
+        contextType: ChatContextType.general,
+      );
+    }
   }
 }
 

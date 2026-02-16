@@ -5,6 +5,7 @@ import 'package:silver_guide/app/theme/app_theme.dart';
 import 'package:silver_guide/features/profile/domain/user_model.dart';
 import 'package:silver_guide/features/profile/presentation/guardian_state.dart';
 import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
+import 'package:silver_guide/services/notification_service.dart';
 import 'package:silver_guide/widgets/timeline_task_item.dart';
 import 'package:silver_guide/features/medication/presentation/medication_provider.dart';
 
@@ -16,6 +17,30 @@ class HealthPage extends ConsumerWidget {
     final currentUserAsync = ref.watch(profileControllerProvider);
     final activeProfileId = ref.watch(activeProfileIdProvider);
 
+    ref.listen(medicationProvider(activeProfileId ?? ""), (previous, next) {
+      if (next.value != null &&
+          currentUserAsync.value?.role == UserRole.elderly) {
+        final notifService = ref.read(notificationServiceProvider);
+
+        // Loop semua obat dan pastikan terjadwal
+        for (var task in next.value!) {
+          final timeParts = task.time.split(":");
+          final timeOfDay = TimeOfDay(
+            hour: int.parse(timeParts[0]),
+            minute: int.parse(timeParts[1]),
+          );
+          final uniqueId = "${task.userId}_${task.title}_${task.time}".hashCode;
+
+          notifService.scheduleMedication(
+            id: uniqueId,
+            title: "Waktunya Minum Obat 💊",
+            body: "Jangan lupa minum ${task.title}",
+            time: timeOfDay,
+          );
+        }
+      }
+    });
+    
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: currentUserAsync.when(
@@ -363,7 +388,10 @@ class _DetailTimelineView extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
-                  return TimelineTaskItem(selectedDate: selectedDate, task: tasks[index]);
+                  return TimelineTaskItem(
+                    selectedDate: selectedDate,
+                    task: tasks[index],
+                  );
                 }, childCount: tasks.length),
               ),
             );

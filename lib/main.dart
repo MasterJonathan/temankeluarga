@@ -9,15 +9,16 @@ import 'package:silver_guide/features/profile/presentation/profile_controller.da
 import 'package:firebase_core/firebase_core.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:silver_guide/firebase_options.dart';
+import 'package:silver_guide/services/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('id_ID', null);
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(
+  final notifService = NotificationService();
+  await notifService.init();
 
-    const ProviderScope(child: SilverGuideApp())
-    );
+  runApp(const ProviderScope(child: SilverGuideApp()));
 }
 
 class SilverGuideApp extends ConsumerWidget {
@@ -50,7 +51,7 @@ class SilverGuideApp extends ConsumerWidget {
       },
       // Logic Routing Sederhana
       home: isLoggedIn.when(
-        data: (user) =>
+        data: (user) => 
             user != null ? const MainNavigationScaffold() : const LoginPage(),
         loading: () =>
             const Scaffold(body: Center(child: CircularProgressIndicator())),

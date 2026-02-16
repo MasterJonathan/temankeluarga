@@ -32,6 +32,26 @@ class MemoryRepository {
     await _firestore.collection('memories').add(post.toMap());
   }
 
+  Future<void> deleteMemory(String postId, String? imageUrl) async {
+    try {
+      // A. Hapus Dokumen Firestore
+      await _firestore.collection('memories').doc(postId).delete();
+
+      // B. Hapus Gambar di Storage (Jika ada)
+      if (imageUrl != null && imageUrl.isNotEmpty) {
+        try {
+          // Mengambil referensi file dari URL public
+          await _storage.refFromURL(imageUrl).delete();
+        } catch (e) {
+          print("Warning: Gagal menghapus file storage (mungkin sudah hilang): $e");
+          // Lanjut saja, jangan throw error agar UI tetap update
+        }
+      }
+    } catch (e) {
+      throw Exception("Gagal menghapus kenangan: $e");
+    }
+  }
+
   // 3. Ambil Postingan (Berdasarkan Family ID)
   Stream<List<MemoryPost>> watchMemories(String familyId) {
     return _firestore
