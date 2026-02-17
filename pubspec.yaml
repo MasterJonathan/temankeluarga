@@ -35,11 +35,13 @@ dependencies:
   riverpod_annotation: ^2.3.5
   http: ^1.6.0
 
-  web_socket_channel: ^3.0.3
-  sound_stream: ^0.4.2
-  
+  record: ^6.2.0
+  flutter_soloud: ^3.4.10
+
   permission_handler: ^12.0.1
   logger: ^2.6.2
+  path_provider: ^2.1.0
+
 
   firebase_core: ^4.4.0
   firebase_auth: ^6.1.4
@@ -47,6 +49,7 @@ dependencies:
   cloud_firestore: ^6.1.2
   cloud_functions: ^6.0.6
   firebase_messaging: ^16.1.1
+  firebase_ai: ^3.8.0
 
   google_sign_in: ^7.2.0
 

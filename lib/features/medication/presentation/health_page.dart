@@ -6,6 +6,7 @@ import 'package:silver_guide/features/profile/domain/user_model.dart';
 import 'package:silver_guide/features/profile/presentation/guardian_state.dart';
 import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
 import 'package:silver_guide/services/notification_service.dart';
+import 'package:silver_guide/widgets/ai_assistant_card.dart';
 import 'package:silver_guide/widgets/timeline_task_item.dart';
 import 'package:silver_guide/features/medication/presentation/medication_provider.dart';
 
@@ -40,7 +41,7 @@ class HealthPage extends ConsumerWidget {
         }
       }
     });
-    
+
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: currentUserAsync.when(
@@ -193,10 +194,7 @@ class _HealthSummaryCard extends ConsumerWidget {
                 offset: const Offset(0, 5),
               ),
             ],
-            border: Border.all(
-              color: statusColor,
-              width: 1,
-            ),
+            border: Border.all(color: statusColor, width: 1),
           ),
           child: Material(
             color: Colors.transparent,
@@ -330,6 +328,12 @@ class _DetailTimelineView extends ConsumerWidget {
 
     return CustomScrollView(
       slivers: [
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.only(bottom: 24.0),
+            child: AiAssistantCard(),
+          ),
+        ),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           sliver: SliverToBoxAdapter(
@@ -512,90 +516,6 @@ class _DetailTimelineView extends ConsumerWidget {
 
         const SizedBox(height: 32),
 
-        // 2. Tanya AI Section
-        Text(
-          "Tanya AI",
-          style: AppTheme.lightTheme.textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: AppColors.textPrimary,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.secondary.withValues(alpha: 0.56),
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            children: [
-              // Mic Button (Besar untuk Lansia)
-              GestureDetector(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Mulai Bicara...")),
-                  );
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: AppColors.surface,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        blurRadius: 12,
-                        spreadRadius: 2,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.mic,
-                    size: 24,
-                    color: AppColors.primary,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Input & Send
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const TextField(
-                        decoration: InputDecoration(
-                          hintText: "Tanya sesuatu...",
-                          border: InputBorder.none,
-                          hintStyle: TextStyle(fontSize: 14),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.send, color: AppColors.surface),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        const SizedBox(height: 32),
-
         // 2. Row Kalender
         Center(
           child: SingleChildScrollView(
@@ -680,7 +600,6 @@ class _DetailTimelineView extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 16),
-
       ],
     );
   }

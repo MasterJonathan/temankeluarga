@@ -12,7 +12,12 @@
           "package_name": "com.example.silver_guide"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "389031362755-ok9to6a8qi84qdett0sgl3a41ttfj6pk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyB6SjEphiXVyFXXGpVc4nOmgBddA7Incd4"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "389031362755-ok9to6a8qi84qdett0sgl3a41ttfj6pk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
