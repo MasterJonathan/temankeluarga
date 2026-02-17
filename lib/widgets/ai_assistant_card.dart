@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:silver_guide/app/theme/app_theme.dart';
+import 'package:teman_keluarga/app/theme/app_theme.dart';
 // Import Controller yang baru diperbaiki
-import 'package:silver_guide/features/medication/presentation/gemini_live_controller.dart';
+import 'package:teman_keluarga/features/medication/presentation/gemini_live_controller.dart';
 
 class AiAssistantCard extends ConsumerWidget {
   const AiAssistantCard({super.key});

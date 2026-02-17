@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:silver_guide/utils/audio_utils.dart';
+import 'package:teman_keluarga/utils/audio_utils.dart';
 
 // State: Apakah sesi aktif?
 final isLiveActiveProvider = StateProvider<bool>((ref) => false);

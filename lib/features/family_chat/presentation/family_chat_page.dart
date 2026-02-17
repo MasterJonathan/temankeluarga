@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:image_picker/image_picker.dart';
-import 'package:silver_guide/app/theme/app_theme.dart';
-import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
+import 'package:teman_keluarga/app/theme/app_theme.dart';
+import 'package:teman_keluarga/features/profile/presentation/profile_controller.dart';
+import 'package:teman_keluarga/widgets/fullscreen_image_viewer.dart';
 import 'chat_provider.dart';
 import 'chat_actions.dart';
 import '../domain/chat_model.dart';
@@ -373,20 +374,15 @@ class _ChatRoomState extends ConsumerState<_ChatRoom> {
                     heroTag: "fab_send_chat",
                     mini: true,
                     elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                        4.0,
+                      ), // Change to desired radius
+                    ),
                     backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.surface,
-                    onPressed: _isComposing
-                        ? _handleSend
-                        : () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text(
-                                  "Fitur Pesan Suara (Coming Soon)",
-                                ),
-                              ),
-                            );
-                          },
-                    child: Icon(_isComposing ? Icons.send : Icons.mic),
+                    onPressed: _handleSend,
+                    child: Icon(Icons.send),
                   ),
                 ],
               ),
@@ -416,16 +412,17 @@ class _ChatBubble extends StatelessWidget {
         decoration: BoxDecoration(
           color: isMe ? AppColors.primary : AppColors.surface,
           borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: isMe ? const Radius.circular(16) : Radius.zero,
-            bottomRight: isMe ? Radius.zero : const Radius.circular(16),
+            topLeft: const Radius.circular(8),
+            topRight: const Radius.circular(8),
+            bottomLeft: isMe ? const Radius.circular(8) : Radius.zero,
+            bottomRight: isMe ? Radius.zero : const Radius.circular(8),
           ),
+          border: Border.all(color: AppColors.primary, width: 1),
           boxShadow: const [
             BoxShadow(
-              color: AppColors.textPrimary,
-              blurRadius: 2,
-              offset: Offset(0, 1),
+              color: AppColors.shadow,
+              blurRadius: 16,
+              offset: Offset(0, 4),
             ),
           ],
         ),
@@ -439,7 +436,7 @@ class _ChatBubble extends StatelessWidget {
                 child: Text(
                   message.senderName,
                   style: const TextStyle(
-                    fontSize: 10,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: AppColors.primary,
                   ),
@@ -452,7 +449,7 @@ class _ChatBubble extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 6),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: isMe ? Colors.black12 : AppColors.surface,
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -461,14 +458,16 @@ class _ChatBubble extends StatelessWidget {
                     Icon(
                       Icons.link,
                       size: 12,
-                      color: isMe ? AppColors.surface : AppColors.textSecondary,
+                      color: AppColors.textPrimary,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       message.contextData!,
                       style: TextStyle(
                         fontSize: 10,
-                        color: isMe ? AppColors.surface : AppColors.textSecondary,
+                        color: isMe
+                            ? AppColors.surface
+                            : AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -479,20 +478,26 @@ class _ChatBubble extends StatelessWidget {
             if (message.type == ChatType.image)
               GestureDetector(
                 onTap: () {
-                  // TODO: Buka full screen image
+                  Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        FullScreenImageViewer(imageUrl: message.content),
+                  ),
+                );
                 },
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(4),
                   child: Image.network(
                     message.content,
-                    width: 200,
+                    width: double.infinity,
                     fit: BoxFit.cover,
                     loadingBuilder: (ctx, child, loading) => loading == null
                         ? child
                         : Container(
                             height: 150,
-                            width: 200,
-                            color: AppColors.textPrimary,
+                            width: double.infinity,
+                            color: AppColors.surface,
                             child: const Center(
                               child: CircularProgressIndicator(),
                             ),

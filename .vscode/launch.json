@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "silver_guide (Chrome)",
+            "name": "teman_keluarga (Chrome)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "debug",
@@ -12,7 +12,7 @@
             ]
         },
         {
-            "name": "silver_guide (Mobile)",
+            "name": "teman_keluarga (Mobile)",
             "request": "launch",
             "type": "dart",
             "flutterMode": "debug"

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:silver_guide/features/authentication/presentation/auth_controller.dart';
+import 'package:teman_keluarga/features/authentication/presentation/auth_controller.dart';
 import '../domain/user_model.dart';
 import '../data/profile_repository.dart';
 
