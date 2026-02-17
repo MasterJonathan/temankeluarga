@@ -9,9 +9,9 @@ import '../domain/activity_model.dart';
 import 'activity_provider.dart'; // IMPORT PROVIDER UTAMA
 
 // Import tambahan untuk fitur Chat Otomatis
-import 'package:silver_guide/features/family_chat/domain/chat_model.dart';
-import 'package:silver_guide/features/family_chat/presentation/chat_actions.dart';
-import 'package:silver_guide/features/profile/domain/user_model.dart';
+import 'package:teman_keluarga/features/family_chat/domain/chat_model.dart';
+import 'package:teman_keluarga/features/family_chat/presentation/chat_actions.dart';
+import 'package:teman_keluarga/features/profile/domain/user_model.dart';
 
 class ActivityActions {
   final Ref ref;

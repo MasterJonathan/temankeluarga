@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:silver_guide/features/profile/domain/user_model.dart';
-import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
+import 'package:teman_keluarga/features/profile/domain/user_model.dart';
+import 'package:teman_keluarga/features/profile/presentation/profile_controller.dart';
 
 // --- State Pilihan Manual ---
 class ViewedElderlyNotifier extends StateNotifier<String?> {

@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:silver_guide/app/theme/app_theme.dart';
+import 'package:teman_keluarga/app/theme/app_theme.dart';
 
 // Import Feature Pages
-import 'package:silver_guide/features/activities/presentation/activities_page.dart';
-import 'package:silver_guide/features/activities/presentation/add_activity_page.dart';
-import 'package:silver_guide/features/family_chat/domain/chat_model.dart';
-import 'package:silver_guide/features/family_chat/presentation/chat_actions.dart';
-import 'package:silver_guide/features/family_chat/presentation/family_chat_page.dart';
-import 'package:silver_guide/features/memories/presentation/memories_page.dart';
-import 'package:silver_guide/features/medication/presentation/health_page.dart';
+import 'package:teman_keluarga/features/activities/presentation/activities_page.dart';
+import 'package:teman_keluarga/features/activities/presentation/add_activity_page.dart';
+import 'package:teman_keluarga/features/family_chat/domain/chat_model.dart';
+import 'package:teman_keluarga/features/family_chat/presentation/chat_actions.dart';
+import 'package:teman_keluarga/features/family_chat/presentation/family_chat_page.dart';
+import 'package:teman_keluarga/features/memories/presentation/memories_page.dart';
+import 'package:teman_keluarga/features/medication/presentation/health_page.dart';
 
 // Import Profile & State
-import 'package:silver_guide/features/profile/domain/user_model.dart';
-import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
-import 'package:silver_guide/features/profile/presentation/settings_page.dart';
-import 'package:silver_guide/features/profile/presentation/guardian_state.dart';
+import 'package:teman_keluarga/features/profile/domain/user_model.dart';
+import 'package:teman_keluarga/features/profile/presentation/profile_controller.dart';
+import 'package:teman_keluarga/features/profile/presentation/settings_page.dart';
+import 'package:teman_keluarga/features/profile/presentation/guardian_state.dart';
 
 // Import Sheets
-import 'package:silver_guide/widgets/medication_form_sheet.dart';
-import 'package:silver_guide/widgets/write_diary_sheet.dart';
+import 'package:teman_keluarga/widgets/medication_form_sheet.dart';
+import 'package:teman_keluarga/widgets/write_diary_sheet.dart';
 
 final navIndexProvider = StateProvider<int>((ref) => 0);
 

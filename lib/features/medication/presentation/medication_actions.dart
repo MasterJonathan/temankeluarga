@@ -6,12 +6,12 @@ import '../domain/medication_model.dart';
 import 'medication_provider.dart'; // IMPORT PROVIDER UTAMA
 
 // Import tambahan untuk fitur Chat Otomatis
-import 'package:silver_guide/features/family_chat/domain/chat_model.dart';
-import 'package:silver_guide/features/family_chat/presentation/chat_actions.dart';
-import 'package:silver_guide/features/profile/domain/user_model.dart';
+import 'package:teman_keluarga/features/family_chat/domain/chat_model.dart';
+import 'package:teman_keluarga/features/family_chat/presentation/chat_actions.dart';
+import 'package:teman_keluarga/features/profile/domain/user_model.dart';
 
 // Import Service Notifikasi
-import 'package:silver_guide/services/notification_service.dart';
+import 'package:teman_keluarga/services/notification_service.dart';
 
 class MedicationActions {
   final Ref ref;

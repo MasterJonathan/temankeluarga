@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Untuk Copy Clipboard
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:silver_guide/app/theme/app_theme.dart';
-import 'package:silver_guide/features/authentication/presentation/auth_controller.dart';
-import 'package:silver_guide/features/profile/domain/user_model.dart';
-import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
-import 'package:silver_guide/widgets/edit_profile_sheet.dart';
-import 'package:silver_guide/widgets/feature_management_sheet.dart';
+import 'package:teman_keluarga/app/theme/app_theme.dart';
+import 'package:teman_keluarga/features/authentication/presentation/auth_controller.dart';
+import 'package:teman_keluarga/features/profile/domain/user_model.dart';
+import 'package:teman_keluarga/features/profile/presentation/profile_controller.dart';
+import 'package:teman_keluarga/widgets/edit_profile_sheet.dart';
+import 'package:teman_keluarga/widgets/feature_management_sheet.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});

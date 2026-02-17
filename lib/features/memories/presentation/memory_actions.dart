@@ -6,14 +6,14 @@ import 'package:firebase_ai/firebase_ai.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:silver_guide/features/memories/presentation/memory_provider.dart';
+import 'package:teman_keluarga/features/memories/presentation/memory_provider.dart';
 import '../data/memory_repository.dart';
 import '../domain/memory_model.dart';
 import 'package:http/http.dart' as http;
 
 // Import tambahan untuk fitur Chat Otomatis
-import 'package:silver_guide/features/family_chat/domain/chat_model.dart';
-import 'package:silver_guide/features/family_chat/presentation/chat_actions.dart';
+import 'package:teman_keluarga/features/family_chat/domain/chat_model.dart';
+import 'package:teman_keluarga/features/family_chat/presentation/chat_actions.dart';
 
 class MemoryActions {
   final Ref ref;

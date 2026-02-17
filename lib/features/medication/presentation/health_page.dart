@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart'; // Untuk format tanggal Date Strip
-import 'package:silver_guide/app/theme/app_theme.dart';
-import 'package:silver_guide/features/profile/domain/user_model.dart';
-import 'package:silver_guide/features/profile/presentation/guardian_state.dart';
-import 'package:silver_guide/features/profile/presentation/profile_controller.dart';
-import 'package:silver_guide/services/notification_service.dart';
-import 'package:silver_guide/widgets/ai_assistant_card.dart';
-import 'package:silver_guide/widgets/timeline_task_item.dart';
-import 'package:silver_guide/features/medication/presentation/medication_provider.dart';
+import 'package:teman_keluarga/app/theme/app_theme.dart';
+import 'package:teman_keluarga/features/profile/domain/user_model.dart';
+import 'package:teman_keluarga/features/profile/presentation/guardian_state.dart';
+import 'package:teman_keluarga/features/profile/presentation/profile_controller.dart';
+import 'package:teman_keluarga/services/notification_service.dart';
+import 'package:teman_keluarga/widgets/ai_assistant_card.dart';
+import 'package:teman_keluarga/widgets/timeline_task_item.dart';
+import 'package:teman_keluarga/features/medication/presentation/medication_provider.dart';
 
 class HealthPage extends ConsumerWidget {
   const HealthPage({super.key});
@@ -190,8 +190,8 @@ class _HealthSummaryCard extends ConsumerWidget {
             boxShadow: [
               BoxShadow(
                 color: AppColors.shadow,
-                blurRadius: 15,
-                offset: const Offset(0, 5),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
               ),
             ],
             border: Border.all(color: statusColor, width: 1),

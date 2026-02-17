@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "silver_guide" "\0"
+            VALUE "FileDescription", "teman_keluarga" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "silver_guide" "\0"
+            VALUE "InternalName", "teman_keluarga" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.example. All rights reserved." "\0"
-            VALUE "OriginalFilename", "silver_guide.exe" "\0"
-            VALUE "ProductName", "silver_guide" "\0"
+            VALUE "OriginalFilename", "teman_keluarga.exe" "\0"
+            VALUE "ProductName", "teman_keluarga" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
