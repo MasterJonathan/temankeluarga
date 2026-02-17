@@ -130,7 +130,7 @@ class _WriteDiarySheetState extends ConsumerState<WriteDiarySheet> {
                     child: GestureDetector(
                       onTap: () => setState(() => _selectedImage = null),
                       child: const CircleAvatar(
-                        backgroundColor: AppColors.surface,
+                        backgroundColor: AppColors.danger,
                         radius: 16,
                         child: Icon(Icons.close, size: 16),
                       ),

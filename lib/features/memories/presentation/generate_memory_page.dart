@@ -39,27 +39,24 @@ class _GenerateMemoryPageState extends ConsumerState<GenerateMemoryPage> {
   void _generate() async {
     setState(() => _isLoading = true);
     try {
-      await ref
-          .read(memoryActionsProvider)
-          .generateDailyArt(
-            familyId: widget.familyId,
-            userId: widget.userId,
-            userName: widget.userName,
-            date: _selectedDate,
-          );
-
+      // Panggil Action baru
+      await ref.read(memoryActionsProvider).generateDailyArt(
+        familyId: widget.familyId,
+        userId: widget.userId,
+        userName: widget.userName,
+        date: _selectedDate,
+      );
+      
       if (mounted) {
         Navigator.pop(context); // Kembali ke feed
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("Sedang melukis kenangan... Tunggu sebentar ya!"),
-          ),
+          const SnackBar(content: Text("Berhasil! Kenangan baru telah ditambahkan ke feed.")),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e"), backgroundColor: AppColors.danger),
+          SnackBar(content: Text("Gagal: ${e.toString()}"), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -88,7 +85,8 @@ class _GenerateMemoryPageState extends ConsumerState<GenerateMemoryPage> {
               ),
               const SizedBox(height: 24),
               const Text(
-                "Buat Halaman Buku Kenangan", // Ganti Judul
+                "Buat Halaman Buku Kenangan",
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
