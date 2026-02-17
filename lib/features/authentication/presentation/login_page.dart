@@ -28,180 +28,183 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: RadialGradient(
-            center: Alignment.topLeft,
-            radius: 2,
-            colors: [Color(0xFFffebe5), Color(0xFFfbf3ff)],
+      body: SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: RadialGradient(
+              center: Alignment.topLeft,
+              radius: 2,
+              colors: [Color(0xFFffebe5), Color(0xFFfbf3ff)],
+            ),
           ),
-        ),
-        child: SafeArea(
           child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // 1. Logo & Branding
-                  Image.asset('assets/images/1.png', height: 300),
-                  const SizedBox(height: 16),
-                  Text(
-                    "Selamat Datang!",
-                    textAlign: TextAlign.center,
-                    style: AppTheme.lightTheme.textTheme.displayLarge?.copyWith(
-                      color: AppColors.textPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Masuk untuk melanjutkan.",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: AppColors.textSecondary.withValues(alpha: 0.8),
-                    ),
-                  ),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const SizedBox(height: 40),
 
-                  const SizedBox(height: 40),
-
-                  // 2. Form Email & Password
-                  _buildTextField(
-                    controller: _emailController,
-                    label: "Email",
-                    icon: Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextField(
-                    controller: _passwordController,
-                    label: "Kata sandi",
-                    icon: Icons.lock_outline,
-                    isPassword: true,
-                  ),
-
-                  // Lupa Password
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: _isLoading ? null : _handleForgotPassword,
-                      child: Text(
-                        "Lupa kata sandi?",
-                        style: GoogleFonts.beVietnamPro(
-                          color: AppColors.primary,
-                        ),
+                    // 1. Logo & Branding
+                    Image.asset('assets/images/1.png', height: 300),
+                    const SizedBox(height: 16),
+                    Text(
+                      "Selamat Datang!",
+                      textAlign: TextAlign.center,
+                      style: AppTheme.lightTheme.textTheme.displayLarge?.copyWith(
+                        color: AppColors.textPrimary,
                       ),
                     ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // 3. Tombol Login Utama
-                  SizedBox(
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () => _handleLogin(context, ref),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 4,
+                    const SizedBox(height: 8),
+                    Text(
+                      "Masuk untuk melanjutkan.",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: AppColors.textSecondary.withValues(alpha: 0.8),
                       ),
-                      child: _isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text(
-                              "Masuk",
-                              style: GoogleFonts.beVietnamPro(
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
-                            ),
                     ),
-                  ),
-
-                  const SizedBox(height: 32),
-
-                  // 4. Divider "Atau Masuk Dengan"
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Divider(
-                          color: AppColors.textSecondary.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+        
+                    const SizedBox(height: 40),
+        
+                    // 2. Form Email & Password
+                    _buildTextField(
+                      controller: _emailController,
+                      label: "Email",
+                      icon: Icons.email_outlined,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 16),
+                    _buildTextField(
+                      controller: _passwordController,
+                      label: "Kata sandi",
+                      icon: Icons.lock_outline,
+                      isPassword: true,
+                    ),
+        
+                    // Lupa Password
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: TextButton(
+                        onPressed: _isLoading ? null : _handleForgotPassword,
                         child: Text(
-                          "atau masuk dengan",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: AppColors.textSecondary.withValues(
-                              alpha: 0.6,
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Divider(
-                          color: AppColors.textSecondary.withValues(alpha: 0.2),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // 5. Social Login Button (Google)
-                  Center(
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: _SocialButton(
-                        icon: Icons.g_mobiledata, // Icon Google
-                        label: "Google",
-                        onTap: () => _handleGoogleLogin(context, ref),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 40),
-
-                  // 6. Link ke Register
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "Belum punya akun? ",
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          // Navigasi ke Halaman Register
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const RegisterPage(),
-                            ),
-                          );
-                        },
-                        child: Text(
-                          "Daftar sekarang.",
+                          "Lupa kata sandi?",
                           style: GoogleFonts.beVietnamPro(
                             color: AppColors.primary,
-                            decoration: TextDecoration.underline,
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                ],
+                    ),
+        
+                    const SizedBox(height: 16),
+        
+                    // 3. Tombol Login Utama
+                    SizedBox(
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _isLoading
+                            ? null
+                            : () => _handleLogin(context, ref),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 4,
+                        ),
+                        child: _isLoading
+                            ? const CircularProgressIndicator(color: AppColors.surface)
+                            : Text(
+                                "Masuk",
+                                style: GoogleFonts.beVietnamPro(
+                                  fontSize: 18,
+                                  color: AppColors.surface,
+                                ),
+                              ),
+                      ),
+                    ),
+        
+                    const SizedBox(height: 32),
+        
+                    // 4. Divider "Atau Masuk Dengan"
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Divider(
+                            color: AppColors.textSecondary.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Text(
+                            "atau masuk dengan",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: AppColors.textSecondary.withValues(
+                                alpha: 0.6,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Divider(
+                            color: AppColors.textSecondary.withValues(alpha: 0.2),
+                          ),
+                        ),
+                      ],
+                    ),
+        
+                    const SizedBox(height: 24),
+        
+                    // 5. Social Login Button (Google)
+                    Center(
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: _SocialButton(
+                          icon: Icons.g_mobiledata, // Icon Google
+                          label: "Google",
+                          onTap: () => _handleGoogleLogin(context, ref),
+                        ),
+                      ),
+                    ),
+        
+                    const SizedBox(height: 40),
+        
+                    // 6. Link ke Register
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Belum punya akun? ",
+                          style: TextStyle(color: AppColors.textSecondary),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            // Navigasi ke Halaman Register
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const RegisterPage(),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            "Daftar sekarang.",
+                            style: GoogleFonts.beVietnamPro(
+                              color: AppColors.primary,
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                ),
               ),
             ),
           ),
         ),
-      ),
     );
   }
 
@@ -216,7 +219,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -252,7 +255,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           fillColor: Colors.transparent, // Warna sudah di Container
           contentPadding: const EdgeInsets.symmetric(
             vertical: 16,
-            horizontal: 20,
+            horizontal: 24,
           ),
         ),
       ),
@@ -299,7 +302,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("Gagal: ${e.toString()}"),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.danger,
           ),
         );
       }
@@ -327,7 +330,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("Login Gagal: ${e.toString()}"),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.danger,
           ),
         );
       }
@@ -347,7 +350,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text("Google Login Gagal: ${e.toString()}"),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.danger,
           ),
         );
       }
@@ -378,7 +381,7 @@ class _SocialButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: AppColors.textSecondary.withValues(alpha: 0.2),

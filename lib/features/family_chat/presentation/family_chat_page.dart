@@ -62,11 +62,11 @@ class _TopicSelector extends ConsumerWidget {
     return Scaffold(
       backgroundColor: AppColors.surface,
       body: Padding(
-        padding: const EdgeInsets.all(20.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
             Text(
               "Mau bahas apa\nhari ini?",
               style: AppTheme.lightTheme.textTheme.displayMedium?.copyWith(
@@ -111,8 +111,8 @@ class _TopicSelector extends ConsumerWidget {
             _TopicCard(
               icon: Icons.coffee,
               color: AppColors.secondary,
-              title: "Obrolan Santai",
-              subtitle: "Sekadar menyapa keluarga.",
+              title: "Masuk Ruang Keluarga",
+              subtitle: "Luangkan waktu bersama keluarga.",
               onTap: () => _enterChat(ref, null, ChatContextType.general, null),
             ),
           ],
@@ -161,30 +161,30 @@ class _TopicCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.08),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
+            color: AppColors.shadow,
+            blurRadius: 16,
+            offset: const Offset(0, 4),
           ),
         ],
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
+        border: Border.all(color: color, width: 1),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(16),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.15),
+                    color: color.withValues(alpha: 0.16),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(icon, color: color, size: 32),
@@ -322,7 +322,7 @@ class _ChatRoomState extends ConsumerState<_ChatRoom> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.surface,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.05),
@@ -374,7 +374,7 @@ class _ChatRoomState extends ConsumerState<_ChatRoom> {
                     mini: true,
                     elevation: 0,
                     backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.surface,
                     onPressed: _isComposing
                         ? _handleSend
                         : () {
@@ -408,22 +408,22 @@ class _ChatBubble extends StatelessWidget {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: const EdgeInsets.only(bottom: 8),
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.75,
         ),
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isMe ? AppColors.primary : Colors.white,
+          color: isMe ? AppColors.primary : AppColors.surface,
           borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(20),
-            topRight: const Radius.circular(20),
-            bottomLeft: isMe ? const Radius.circular(20) : Radius.zero,
-            bottomRight: isMe ? Radius.zero : const Radius.circular(20),
+            topLeft: const Radius.circular(16),
+            topRight: const Radius.circular(16),
+            bottomLeft: isMe ? const Radius.circular(16) : Radius.zero,
+            bottomRight: isMe ? Radius.zero : const Radius.circular(16),
           ),
           boxShadow: const [
             BoxShadow(
-              color: Colors.black12,
+              color: AppColors.textPrimary,
               blurRadius: 2,
               offset: Offset(0, 1),
             ),
@@ -461,14 +461,14 @@ class _ChatBubble extends StatelessWidget {
                     Icon(
                       Icons.link,
                       size: 12,
-                      color: isMe ? Colors.white70 : AppColors.textSecondary,
+                      color: isMe ? AppColors.surface : AppColors.textSecondary,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       message.contextData!,
                       style: TextStyle(
                         fontSize: 10,
-                        color: isMe ? Colors.white : AppColors.textSecondary,
+                        color: isMe ? AppColors.surface : AppColors.textSecondary,
                       ),
                     ),
                   ],
@@ -492,7 +492,7 @@ class _ChatBubble extends StatelessWidget {
                         : Container(
                             height: 150,
                             width: 200,
-                            color: Colors.black12,
+                            color: AppColors.textPrimary,
                             child: const Center(
                               child: CircularProgressIndicator(),
                             ),
@@ -505,7 +505,7 @@ class _ChatBubble extends StatelessWidget {
                 message.content,
                 style: TextStyle(
                   fontSize: 16,
-                  color: isMe ? Colors.white : AppColors.textPrimary,
+                  color: isMe ? AppColors.surface : AppColors.textPrimary,
                 ),
               ),
 
@@ -518,7 +518,7 @@ class _ChatBubble extends StatelessWidget {
                 "${message.timestamp.hour}:${message.timestamp.minute.toString().padLeft(2, '0')}",
                 style: TextStyle(
                   fontSize: 10,
-                  color: isMe ? Colors.white70 : AppColors.textSecondary,
+                  color: isMe ? AppColors.surface : AppColors.textSecondary,
                 ),
               ),
             ),

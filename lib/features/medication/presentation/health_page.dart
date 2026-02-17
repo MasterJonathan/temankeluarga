@@ -117,12 +117,12 @@ class _GuardianHealthDashboard extends ConsumerWidget {
         }
 
         return ListView(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 100),
           children: [
             Text(
               "Pantauan Kesehatan",
               style: AppTheme.lightTheme.textTheme.displayMedium?.copyWith(
-                color: AppColors.primary,
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
@@ -167,44 +167,47 @@ class _HealthSummaryCard extends ConsumerWidget {
 
         // Status Logic Warna
         Color statusColor = AppColors.primary; // Hijau (Aman)
+        Color statusTextColor = AppColors.primary; // Hijau (Aman)
         String statusText = "Terkendali";
 
         if (total == 0) {
-          statusColor = Colors.grey;
+          statusColor = AppColors.secondarySurface;
+          statusTextColor = AppColors.textPrimary; // Orange (Belum selesai)
           statusText = "Kosong";
         } else if (taken < total) {
           // Bisa tambah logika jam jika mau lebih canggih (misal: merah jika telat)
           statusColor = AppColors.accent; // Orange (Belum selesai)
+          statusTextColor = AppColors.accent; // Orange (Belum selesai)
           statusText = "Perlu Dicek";
         }
 
         return Container(
           margin: const EdgeInsets.only(bottom: 16),
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: AppColors.shadow.withValues(alpha: 0.08),
+                color: AppColors.shadow,
                 blurRadius: 15,
                 offset: const Offset(0, 5),
               ),
             ],
             border: Border.all(
-              color: statusColor.withValues(alpha: 0.3),
+              color: statusColor,
               width: 1,
             ),
           ),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(16),
               onTap: () {
                 // AKSI: Set Active Profile -> UI otomatis pindah ke Detail View
                 ref.read(viewedElderlyIdProvider.notifier).state = member.id;
               },
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(24),
                 child: Row(
                   children: [
                     Hero(
@@ -212,7 +215,7 @@ class _HealthSummaryCard extends ConsumerWidget {
                       child: CircleAvatar(
                         radius: 32,
                         backgroundImage: NetworkImage(member.photoUrl),
-                        backgroundColor: Colors.grey[200],
+                        backgroundColor: AppColors.surface,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -236,7 +239,7 @@ class _HealthSummaryCard extends ConsumerWidget {
                               Container(
                                 height: 8,
                                 decoration: BoxDecoration(
-                                  color: Colors.grey[200],
+                                  color: AppColors.secondarySurface,
                                   borderRadius: BorderRadius.circular(4),
                                 ),
                               ),
@@ -279,7 +282,7 @@ class _HealthSummaryCard extends ConsumerWidget {
                                   style: TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
-                                    color: statusColor,
+                                    color: statusTextColor,
                                   ),
                                 ),
                               ),
@@ -288,7 +291,7 @@ class _HealthSummaryCard extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     const Icon(
                       Icons.arrow_forward_ios_rounded,
                       size: 18,
@@ -328,7 +331,7 @@ class _DetailTimelineView extends ConsumerWidget {
     return CustomScrollView(
       slivers: [
         SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           sliver: SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -373,7 +376,7 @@ class _DetailTimelineView extends ConsumerWidget {
               return const SliverFillRemaining(
                 hasScrollBody: false,
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: 24),
                   child: Center(
                     child: Text(
                       "Tidak ada catatan obat pada tanggal ini.",
@@ -385,7 +388,7 @@ class _DetailTimelineView extends ConsumerWidget {
             }
 
             return SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 24),
               sliver: SliverList(
                 delegate: SliverChildBuilderDelegate((context, index) {
                   return TimelineTaskItem(
@@ -467,8 +470,8 @@ class _DetailTimelineView extends ConsumerWidget {
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.accent.withValues(alpha: 0.5), // Subtle accent
-            borderRadius: BorderRadius.circular(12),
+            color: AppColors.accent.withValues(alpha: 0.56), // Subtle accent
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -476,7 +479,7 @@ class _DetailTimelineView extends ConsumerWidget {
               Expanded(
                 child: Container(
                   height: 130, // Tinggi tetap untuk centering quote
-                  padding: const EdgeInsets.fromLTRB(24, 0, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -485,7 +488,7 @@ class _DetailTimelineView extends ConsumerWidget {
                         "\"Kesehatan adalah harta paling berharga yang kita miliki.\"",
                         style: TextStyle(
                           fontStyle: FontStyle.italic,
-                          color: AppColors.textPrimary.withValues(alpha: 0.8),
+                          color: AppColors.textPrimary,
                           fontSize: 15,
                           height: 1.4,
                         ),
@@ -496,7 +499,7 @@ class _DetailTimelineView extends ConsumerWidget {
               ),
               // Gambar mepet bawah (Zero padding bottom)
               Padding(
-                padding: const EdgeInsets.only(right: 16),
+                padding: const EdgeInsets.only(right: 8),
                 child: Image.asset(
                   "assets/images/1_crop.png",
                   height: 110,
@@ -517,13 +520,13 @@ class _DetailTimelineView extends ConsumerWidget {
             color: AppColors.textPrimary,
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: AppColors.secondary.withValues(alpha: 0.5),
-            borderRadius: BorderRadius.circular(12),
+            color: AppColors.secondary.withValues(alpha: 0.56),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
             children: [
@@ -537,7 +540,7 @@ class _DetailTimelineView extends ConsumerWidget {
                 child: Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: AppColors.surface,
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
@@ -554,7 +557,7 @@ class _DetailTimelineView extends ConsumerWidget {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
               // Input & Send
               Row(
                 children: [
@@ -562,8 +565,8 @@ class _DetailTimelineView extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: const TextField(
                         decoration: InputDecoration(
@@ -574,15 +577,15 @@ class _DetailTimelineView extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   Container(
                     decoration: BoxDecoration(
                       color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(16),
                     ),
                     child: IconButton(
                       onPressed: () {},
-                      icon: const Icon(Icons.send, color: Colors.white),
+                      icon: const Icon(Icons.send, color: AppColors.surface),
                     ),
                   ),
                 ],
@@ -614,7 +617,7 @@ class _DetailTimelineView extends ConsumerWidget {
                     ref.read(selectedDateProvider.notifier).state = date;
                   },
                   child: Container(
-                    margin: const EdgeInsets.only(right: 12),
+                    margin: const EdgeInsets.only(right: 16),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
                       vertical: 16,
@@ -676,6 +679,8 @@ class _DetailTimelineView extends ConsumerWidget {
             color: AppColors.textPrimary,
           ),
         ),
+        const SizedBox(height: 16),
+
       ],
     );
   }

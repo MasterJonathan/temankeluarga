@@ -39,13 +39,10 @@ class TimelineTaskItem extends ConsumerWidget {
       buttonText = "Terlewati";
     }
 
-    final cardColor = task.isTaken ? AppColors.primary : Colors.white;
-    final textColor = task.isTaken ? Colors.white : AppColors.textPrimary;
-    final subTextColor = task.isTaken
-        ? Colors.white70
-        : AppColors.textSecondary;
-    final btnBgColor = task.isTaken ? Colors.white : AppColors.primary;
-    final btnTextColor = task.isTaken ? AppColors.primary : Colors.white;
+    final cardColor = task.isTaken ? AppColors.secondary : AppColors.surface;
+    final textColor = AppColors.textPrimary;
+    final subTextColor = AppColors.textSecondary;
+    final btnBgColor = task.isTaken ? AppColors.surface : AppColors.primary;
 
     return Padding(
       padding: const EdgeInsets.only(left: 16.0),
@@ -70,8 +67,8 @@ class TimelineTaskItem extends ConsumerWidget {
                     child: Container(
                       width: 2,
                       color: task.isTaken
-                          ? AppColors.secondary
-                          : AppColors.textSecondary.withOpacity(0.2),
+                          ? AppColors.primary
+                          : AppColors.secondarySurface,
                     ),
                   ),
                 ],
@@ -85,10 +82,10 @@ class TimelineTaskItem extends ConsumerWidget {
                 child: Container(
                   decoration: BoxDecoration(
                     color: cardColor,
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.shadow.withOpacity(0.1),
+                        color: AppColors.shadow,
                         blurRadius: 15,
                         offset: const Offset(0, 8),
                       ),
@@ -139,7 +136,7 @@ class TimelineTaskItem extends ConsumerWidget {
                                                 decoration: task.isTaken
                                                     ? TextDecoration.lineThrough
                                                     : null,
-                                                decorationColor: Colors.white,
+                                                decorationColor: AppColors.surface,
                                               ),
                                         ),
                                       ),
@@ -149,8 +146,8 @@ class TimelineTaskItem extends ConsumerWidget {
                                           icon: Icon(
                                             Icons.delete_outline,
                                             color: task.isTaken
-                                                ? Colors.white70
-                                                : Colors.red[300],
+                                                ? AppColors.surface
+                                                : AppColors.danger,
                                             size: 20,
                                           ),
                                           padding: EdgeInsets.zero,
@@ -277,7 +274,7 @@ class TimelineTaskItem extends ConsumerWidget {
                   .deleteMedication(task.userId, task.id);
               Navigator.pop(ctx);
             },
-            child: const Text("Hapus", style: TextStyle(color: Colors.red)),
+            child: const Text("Hapus", style: TextStyle(color: AppColors.danger)),
           ),
         ],
       ),

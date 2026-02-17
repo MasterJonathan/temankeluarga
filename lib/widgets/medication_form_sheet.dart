@@ -28,7 +28,7 @@ class _MedicationFormSheetState extends ConsumerState<MedicationFormSheet> {
   DateTime _endDate = DateTime.now().add(const Duration(days: 30)); 
   bool _isForever = true; 
   
-  List<int> _selectedDays = [1, 2, 3, 4, 5, 6, 7];
+  final List<int> _selectedDays = [1, 2, 3, 4, 5, 6, 7];
 
   @override
   void initState() {
@@ -140,17 +140,17 @@ class _MedicationFormSheetState extends ConsumerState<MedicationFormSheet> {
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          left: 20, 
-          right: 20, 
-          top: 20
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          left: 24, 
+          right: 24, 
+          top: 24
         ),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Judul (Sesuai patokan: Center, Bold, Size 20)
+              // Header Judul (Sesuai patokan: Center, Bold, Size 24)
               const Center(
                 child: Text(
                   "Tambah Jadwal Obat",
@@ -166,7 +166,7 @@ class _MedicationFormSheetState extends ConsumerState<MedicationFormSheet> {
                   labelText: 'Nama Obat', 
                   hintText: 'Contoh: Paracetamol',
                   prefixIcon: const Icon(Icons.medication),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                 )
               ),
               const SizedBox(height: 16),
@@ -178,7 +178,7 @@ class _MedicationFormSheetState extends ConsumerState<MedicationFormSheet> {
                   labelText: 'Deskripsi / Dosis / Aturan', 
                   hintText: 'Contoh: Sesudah makan',
                   prefixIcon: const Icon(Icons.info_outline),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                 )
               ),
               const SizedBox(height: 16),
@@ -191,13 +191,13 @@ class _MedicationFormSheetState extends ConsumerState<MedicationFormSheet> {
                 decoration: InputDecoration(
                   labelText: 'Jam Minum',
                   prefixIcon: const Icon(Icons.access_time_filled),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                 ),
               ),
               
               const SizedBox(height: 24),
               const Text("Durasi Pengobatan", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
 
               // Tanggal Mulai
               TextField(
@@ -207,7 +207,7 @@ class _MedicationFormSheetState extends ConsumerState<MedicationFormSheet> {
                 decoration: InputDecoration(
                   labelText: 'Mulai Tanggal',
                   prefixIcon: const Icon(Icons.calendar_today),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                 ),
               ),
 
@@ -219,7 +219,7 @@ class _MedicationFormSheetState extends ConsumerState<MedicationFormSheet> {
                 title: const Text("Berulang Selamanya", style: TextStyle(fontWeight: FontWeight.w600)),
                 subtitle: const Text("Tidak ada tanggal berakhir"),
                 value: _isForever,
-                activeColor: AppColors.primary,
+                activeThumbColor: AppColors.primary,
                 onChanged: (val) {
                   setState(() => _isForever = val);
                 },
@@ -235,7 +235,7 @@ class _MedicationFormSheetState extends ConsumerState<MedicationFormSheet> {
                   decoration: InputDecoration(
                     labelText: 'Sampai Tanggal',
                     prefixIcon: const Icon(Icons.event_available),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
                   ),
                 ),
               ],
@@ -246,7 +246,7 @@ class _MedicationFormSheetState extends ConsumerState<MedicationFormSheet> {
               ),
               
               const Text("Ulangi Setiap Hari:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              const SizedBox(height: 12),
+              const SizedBox(height: 8),
               
               // Day Selector
               Row(
@@ -270,7 +270,7 @@ class _MedicationFormSheetState extends ConsumerState<MedicationFormSheet> {
                       child: Text(
                         dayName,
                         style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.grey[600],
+                          color: isSelected ? AppColors.surface : Colors.grey[600],
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -289,7 +289,7 @@ class _MedicationFormSheetState extends ConsumerState<MedicationFormSheet> {
                   onPressed: _submit,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary, 
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     elevation: 0,
                   ),
                   child: const Text(
@@ -297,12 +297,12 @@ class _MedicationFormSheetState extends ConsumerState<MedicationFormSheet> {
                     style: TextStyle(
                       fontSize: 16, 
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: AppColors.surface,
                     )
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
             ],
           ),
         ),

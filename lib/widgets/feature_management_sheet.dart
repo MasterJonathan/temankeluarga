@@ -132,7 +132,7 @@ class _FeatureConfigSheetState extends ConsumerState<FeatureConfigSheet> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal: $e"), backgroundColor: Colors.red));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal: $e"), backgroundColor: AppColors.danger));
       }
     } finally {
       if (mounted) setState(() => _isLoading = false);
@@ -144,8 +144,8 @@ class _FeatureConfigSheetState extends ConsumerState<FeatureConfigSheet> {
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          left: 20, right: 20, top: 20
+          bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+          left: 24, right: 24, top: 24
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -153,8 +153,8 @@ class _FeatureConfigSheetState extends ConsumerState<FeatureConfigSheet> {
           children: [
             Row(
               children: [
-                CircleAvatar(radius: 20, backgroundImage: NetworkImage(widget.user.photoUrl)),
-                const SizedBox(width: 12),
+                CircleAvatar(radius: 24, backgroundImage: NetworkImage(widget.user.photoUrl)),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,11 +203,11 @@ class _FeatureConfigSheetState extends ConsumerState<FeatureConfigSheet> {
                 onPressed: _isLoading ? null : _saveChanges,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
+                  foregroundColor: AppColors.surface,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))
                 ),
                 child: _isLoading 
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: AppColors.surface, strokeWidth: 2))
                   : const Text("Simpan Konfigurasi", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
             ),
@@ -223,15 +223,15 @@ class _FeatureConfigSheetState extends ConsumerState<FeatureConfigSheet> {
     return SwitchListTile(
       contentPadding: EdgeInsets.zero,
       value: isActive,
-      activeColor: color,
+      activeThumbColor: color,
       title: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+            decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
             child: Icon(icon, color: color, size: 20),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
           Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),

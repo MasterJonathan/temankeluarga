@@ -47,7 +47,7 @@ class MedicationActions {
           );
         }
       } catch (e) {
-        print("Gagal kirim log obat ke chat: $e");
+        debugPrint("Gagal kirim log obat ke chat: $e");
       }
     }
   }
@@ -82,7 +82,7 @@ class MedicationActions {
         time: timeOfDay,
       );
     } catch (e) {
-      print("Gagal menjadwalkan notifikasi: $e");
+      debugPrint("Gagal menjadwalkan notifikasi: $e");
     }
   }
 
@@ -105,13 +105,13 @@ class MedicationActions {
         final time = data['time'] as String;
         
         // Recreate ID yang sama seperti saat Add
-        final uniqueNotifId = "${userId}_${title}_${time}".hashCode;
+        final uniqueNotifId = "${userId}_${title}_$time".hashCode;
         
         // Batalkan Notifikasi
         await notifService.cancelNotification(uniqueNotifId);
       }
     } catch (e) {
-      print("Gagal membatalkan notifikasi: $e");
+      debugPrint("Gagal membatalkan notifikasi: $e");
     }
 
     // B. Hapus dari Database

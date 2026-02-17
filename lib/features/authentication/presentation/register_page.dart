@@ -27,7 +27,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   // Default semua fitur aktif
   // Key: 'health', 'activity', 'memory', 'chat'
-  List<String> _selectedFeatures = ['health', 'activity', 'memory', 'chat'];
+  final List<String> _selectedFeatures = [
+    'health',
+    'activity',
+    'memory',
+    'chat',
+  ];
 
   bool _isLoading = false;
 
@@ -150,7 +155,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   void _showError(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: Colors.red),
+      SnackBar(content: Text(message), backgroundColor: AppColors.danger),
     );
   }
 
@@ -203,8 +208,6 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             children: [
               const SizedBox(height: 16),
               // Gambar dinamis? Atau statis saja
-              Image.asset('assets/images/2.png', height: 200),
-
               // 1. Progress Indicator
               Padding(
                 padding: const EdgeInsets.symmetric(
@@ -262,7 +265,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                          color: AppColors.surface,
                         ),
                       ),
                     ),
@@ -283,6 +286,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Center(child: Image.asset('assets/images/2.png', height: 200)),
+          const SizedBox(height: 16),
+
           Text(
             "Mulai dari akun.",
             style: TextStyle(
@@ -297,7 +303,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             "Daftarkan email dan kata sandi untuk keamanan akun Anda.",
             style: TextStyle(fontSize: 18, color: AppColors.textPrimary),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 24),
           _buildTextField(
             controller: _emailController,
             label: "Email",
@@ -324,12 +330,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   Widget _buildStep2Personal() {
-    // ... Copy from your previous code ...
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Center(child: Image.asset('assets/images/2.png', height: 200)),
+          const SizedBox(height: 16),
+
           Text(
             "Isi data diri.",
             style: TextStyle(
@@ -376,11 +384,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   // --- STEP 3: PILIH PERAN ---
   Widget _buildStep3Role() {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Center(child: Image.asset('assets/images/2.png', height: 200)),
+          const SizedBox(height: 16),
+
           Text(
             "Pilih peran.",
             style: TextStyle(
@@ -397,7 +408,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           ),
           const SizedBox(height: 32),
 
-          _RoleSelectionCard(
+          _roleSelectionCard(
             title: "Pengguna Utama",
             subtitle: "Saya ingin mencatat kesehatan & kenangan saya sendiri.",
             icon: Icons.person,
@@ -406,7 +417,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             onTap: () => setState(() => _selectedRole = 'elderly'),
           ),
           const SizedBox(height: 16),
-          _RoleSelectionCard(
+          _roleSelectionCard(
             title: "Pendamping (Keluarga)",
             subtitle: "Saya ingin membantu memantau orang tua saya.",
             icon: Icons.supervised_user_circle,
@@ -415,7 +426,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             onTap: () => setState(() => _selectedRole = 'guardian'),
           ),
 
-          const Spacer(),
+          const SizedBox(height:24),
+
 
           // TOMBOL Lanjut / Selesai (Tergantung Role)
           SizedBox(
@@ -432,7 +444,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 ),
               ),
               child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? const CircularProgressIndicator(color: AppColors.surface)
                   : Text(
                       _selectedRole == 'elderly'
                           ? "Selesai & Masuk"
@@ -440,7 +452,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.surface,
                       ),
                     ),
             ),
@@ -457,6 +469,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Center(child: Image.asset('assets/images/2.png', height: 200)),
+          const SizedBox(height: 16),
+
           Text(
             "Sesuaikan Fitur.",
             style: TextStyle(
@@ -474,7 +489,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           const SizedBox(height: 24),
 
           // LIST FITUR
-          _FeatureSelectionCard(
+          _featureSelectionCard(
             keyName: 'health',
             title: "Kesehatan",
             subtitle: "Jadwal obat & pantauan medis.",
@@ -483,8 +498,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             isSelected: _selectedFeatures.contains('health'),
             onTap: () => _toggleFeature('health'),
           ),
-          const SizedBox(height: 12),
-          _FeatureSelectionCard(
+          const SizedBox(height: 8),
+          _featureSelectionCard(
             keyName: 'activity',
             title: "Aktivitas",
             subtitle: "Hobi & kebun kebahagiaan.",
@@ -493,8 +508,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             isSelected: _selectedFeatures.contains('activity'),
             onTap: () => _toggleFeature('activity'),
           ),
-          const SizedBox(height: 12),
-          _FeatureSelectionCard(
+          const SizedBox(height: 8),
+          _featureSelectionCard(
             keyName: 'memory',
             title: "Kenangan",
             subtitle: "Album foto & jurnal harian.",
@@ -503,8 +518,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             isSelected: _selectedFeatures.contains('memory'),
             onTap: () => _toggleFeature('memory'),
           ),
-          const SizedBox(height: 12),
-          _FeatureSelectionCard(
+          const SizedBox(height: 8),
+          _featureSelectionCard(
             keyName: 'chat',
             title: "Obrolan",
             subtitle: "Grup chat keluarga simpel.",
@@ -529,13 +544,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 ),
               ),
               child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
+                  ? const CircularProgressIndicator(color: AppColors.surface)
                   : const Text(
                       "Simpan & Selesai",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.surface,
                       ),
                     ),
             ),
@@ -564,7 +579,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         child: Text(
           "${index + 1}",
           style: TextStyle(
-            color: isActive ? Colors.white : Colors.grey[600],
+            color: isActive ? AppColors.surface : Colors.grey[600],
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -583,7 +598,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }
 
   // Helper Card untuk Fitur
-  Widget _FeatureSelectionCard({
+  Widget _featureSelectionCard({
     required String keyName,
     required String title,
     required String subtitle,
@@ -598,7 +613,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.05) : Colors.white,
+          color: isSelected ? color.withValues(alpha: 0.05) : AppColors.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? color : Colors.transparent,
@@ -656,7 +671,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             Switch(
               value: isSelected,
               onChanged: (val) => onTap(),
-              activeColor: color,
+              activeThumbColor: color,
             ),
           ],
         ),
@@ -674,7 +689,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -714,7 +729,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -725,7 +740,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         ],
       ),
       child: DropdownButtonFormField<String>(
-        value: value,
+        initialValue: value,
         decoration: InputDecoration(
           labelText: label,
           labelStyle: GoogleFonts.openSans(color: AppColors.textSecondary),
@@ -750,14 +765,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           );
         }).toList(),
         onChanged: onChanged,
-        dropdownColor: Colors.white,
+        dropdownColor: AppColors.surface,
         icon: const Icon(Icons.arrow_drop_down, color: AppColors.textSecondary),
         borderRadius: BorderRadius.circular(16),
       ),
     );
   }
 
-  Widget _RoleSelectionCard({
+  Widget _roleSelectionCard({
     required String title,
     required String subtitle,
     required IconData icon,
@@ -769,10 +784,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.1) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
+          color: isSelected ? color.withValues(alpha: 0.1) : AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? color : Colors.transparent,
             width: 2,
@@ -788,14 +803,14 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: isSelected ? color : Colors.grey[200],
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: isSelected ? Colors.white : Colors.grey[500],
+                color: isSelected ? AppColors.surface : Colors.grey[500],
                 size: 28,
               ),
             ),
