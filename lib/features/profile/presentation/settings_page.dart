@@ -31,26 +31,27 @@ class SettingsPage extends ConsumerWidget {
               children: [
                 _ProfileHeaderCard(user: user),
                 const SizedBox(height: 24),
-        
+
                 // Bagian Keluarga
                 const _SectionTitle(title: "KELUARGA"),
                 _FamilyConnectionCard(user: user),
-        
+
                 const SizedBox(height: 24),
-                
+
                 // Bagian Fitur (Khusus Guardian)
-                if (user.role == UserRole.guardian && user.familyId != null) ...[
+                if (user.role == UserRole.guardian &&
+                    user.familyId != null) ...[
                   const _SectionTitle(title: "KONFIGURASI"),
                   _FeatureSettingsCard(user: user),
                   const SizedBox(height: 24),
                 ],
-        
+
                 // Pengaturan Umum
                 const _SectionTitle(title: "UMUM"),
                 _GeneralSettingsCard(user: user, ref: ref),
-        
+
                 const SizedBox(height: 40),
-        
+
                 // Tombol Logout
                 SizedBox(
                   width: double.infinity,
@@ -60,18 +61,25 @@ class SettingsPage extends ConsumerWidget {
                       foregroundColor: AppColors.surface,
                       side: BorderSide(color: AppColors.danger),
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                       backgroundColor: AppColors.danger,
                     ),
                     icon: const Icon(Icons.logout, size: 20),
-                    label: const Text("Keluar Akun", style: TextStyle(fontWeight: FontWeight.bold)),
+                    label: const Text(
+                      "Keluar Akun",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 40),
               ],
             ),
           ),
-          loading: () => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
+          loading: () => const Center(
+            child: CircularProgressIndicator(color: AppColors.primary),
+          ),
           error: (err, _) => Center(child: Text("Error: $err")),
         ),
       ),
@@ -99,7 +107,10 @@ class SettingsPage extends ConsumerWidget {
                 Navigator.of(context).popUntil((route) => route.isFirst);
               }
             },
-            child: const Text("Keluar", style: TextStyle(color: AppColors.danger)),
+            child: const Text(
+              "Keluar",
+              style: TextStyle(color: AppColors.danger),
+            ),
           ),
         ],
       ),
@@ -121,25 +132,41 @@ class _FamilyConnectionCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: AppColors.shadow.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         children: [
           if (hasFamily) ...[
             // 1. Header Kode Keluarga
             ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              leading: const Icon(Icons.vpn_key_outlined, color: AppColors.textSecondary),
+              contentPadding: const EdgeInsets.fromLTRB(24, 8, 16, 8),
+              leading: const Icon(
+                Icons.vpn_key_outlined,
+                color: AppColors.textSecondary,
+              ),
               title: const Text("Kode Keluarga"),
               subtitle: Text(
                 user.familyId!,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppColors.primary, letterSpacing: 1.0)
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: AppColors.primary,
+                  letterSpacing: 1.0,
+                ),
               ),
               trailing: IconButton(
                 icon: const Icon(Icons.copy, size: 20),
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: user.familyId!));
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Kode disalin!")));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Kode disalin!")),
+                  );
                 },
               ),
             ),
@@ -155,9 +182,18 @@ class _FamilyConnectionCard extends ConsumerWidget {
             if (isGuardian) ...[
               const Divider(height: 2, color: AppColors.surface),
               ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 4,
+                ),
                 leading: const Icon(Icons.exit_to_app, color: AppColors.danger),
-                title: const Text("Keluar dari keluarga", style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.w500)),
+                title: const Text(
+                  "Keluar dari keluarga",
+                  style: TextStyle(
+                    color: AppColors.danger,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
                 onTap: () => _showLeaveDialog(context, ref),
               ),
             ],
@@ -171,8 +207,14 @@ class _FamilyConnectionCard extends ConsumerWidget {
   }
 
   // Widget List Anggota
-  Widget _buildMemberList(BuildContext context, WidgetRef ref, UserProfile currentUser) {
-    final membersAsync = ref.watch(familyMembersProvider); // Ini dari profile_controller.dart
+  Widget _buildMemberList(
+    BuildContext context,
+    WidgetRef ref,
+    UserProfile currentUser,
+  ) {
+    final membersAsync = ref.watch(
+      familyMembersProvider,
+    ); // Ini dari profile_controller.dart
 
     return membersAsync.when(
       data: (members) {
@@ -182,30 +224,68 @@ class _FamilyConnectionCard extends ConsumerWidget {
           children: [
             const Padding(
               padding: EdgeInsets.fromLTRB(24, 16, 24, 8),
-              child: Text("Anggota", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppColors.textSecondary)),
+              child: Text(
+                "Anggota",
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ),
-            ...members.map((member) => ListTile(
-              contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 0),
-              leading: CircleAvatar(backgroundImage: NetworkImage(member.photoUrl), radius: 16),
-              title: Text(member.name + (member.id == currentUser.id ? " (Anda)" : ""), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-              subtitle: Text(member.role == UserRole.guardian ? "Pendamping" : "Pengguna Utama", style: const TextStyle(fontSize: 12)),
-              trailing: (currentUser.role == UserRole.guardian && member.id != currentUser.id)
-                  ? IconButton(
-                      icon: const Icon(Icons.remove_circle_outline, color: AppColors.danger),
-                      onPressed: () => _showKickDialog(context, ref, member),
-                    )
-                  : null,
-            )),
+            ...members.map(
+              (member) => ListTile(
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 0,
+                ),
+                leading: CircleAvatar(
+                  backgroundImage: NetworkImage(member.photoUrl),
+                  radius: 16,
+                ),
+                title: Text(
+                  member.name + (member.id == currentUser.id ? " (Anda)" : ""),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                subtitle: Text(
+                  member.role == UserRole.guardian
+                      ? "Pendamping"
+                      : "Pengguna Utama",
+                  style: const TextStyle(fontSize: 12),
+                ),
+                trailing:
+                    (currentUser.role == UserRole.guardian &&
+                        member.id != currentUser.id)
+                    ? IconButton(
+                        icon: const Icon(
+                          Icons.remove_circle_outline,
+                          color: AppColors.danger,
+                        ),
+                        onPressed: () => _showKickDialog(context, ref, member),
+                      )
+                    : null,
+              ),
+            ),
           ],
         );
       },
-      loading: () => const Padding(padding: EdgeInsets.all(24), child: Center(child: CircularProgressIndicator())),
+      loading: () => const Padding(
+        padding: EdgeInsets.all(24),
+        child: Center(child: CircularProgressIndicator()),
+      ),
       error: (_, _) => const SizedBox(),
     );
   }
 
   // Widget List Request (Pending Approval)
-  Widget _buildRequestList(BuildContext context, WidgetRef ref, String familyId) {
+  Widget _buildRequestList(
+    BuildContext context,
+    WidgetRef ref,
+    String familyId,
+  ) {
     final requestsAsync = ref.watch(joinRequestsProvider(familyId));
 
     return requestsAsync.when(
@@ -217,26 +297,45 @@ class _FamilyConnectionCard extends ConsumerWidget {
               width: double.infinity,
               color: Colors.orange.withValues(alpha: 0.1),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              child: const Text("Menunggu Persetujuan", style: TextStyle(color: Colors.orange, fontWeight: FontWeight.bold, fontSize: 12)),
-            ),
-            ...requests.map((req) => ListTile(
-              leading: CircleAvatar(backgroundImage: NetworkImage(req.photoUrl), radius: 16),
-              title: Text(req.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: const Text("Ingin bergabung"),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.check_circle, color: Colors.green),
-                    onPressed: () => ref.read(profileControllerProvider.notifier).acceptMember(req.id),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.cancel, color: AppColors.danger),
-                    onPressed: () => ref.read(profileControllerProvider.notifier).removeMember(req.id),
-                  ),
-                ],
+              child: const Text(
+                "Menunggu Persetujuan",
+                style: TextStyle(
+                  color: Colors.orange,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
               ),
-            )),
+            ),
+            ...requests.map(
+              (req) => ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: NetworkImage(req.photoUrl),
+                  radius: 16,
+                ),
+                title: Text(
+                  req.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: const Text("Ingin bergabung"),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.check_circle, color: Colors.green),
+                      onPressed: () => ref
+                          .read(profileControllerProvider.notifier)
+                          .acceptMember(req.id),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.cancel, color: AppColors.danger),
+                      onPressed: () => ref
+                          .read(profileControllerProvider.notifier)
+                          .removeMember(req.id),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const Divider(height: 2, color: AppColors.surface),
           ],
         );
@@ -246,11 +345,18 @@ class _FamilyConnectionCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildNoFamilyView(BuildContext context, WidgetRef ref, bool isGuardian) {
+  Widget _buildNoFamilyView(
+    BuildContext context,
+    WidgetRef ref,
+    bool isGuardian,
+  ) {
     return Column(
       children: [
         ListTile(
-          leading: const Icon(Icons.group_add_outlined, color: AppColors.primary),
+          leading: const Icon(
+            Icons.group_add_outlined,
+            color: AppColors.primary,
+          ),
           title: const Text("Gabung Keluarga"),
           subtitle: const Text("Masukkan kode undangan"),
           trailing: const Icon(Icons.arrow_forward_ios, size: 14),
@@ -259,24 +365,36 @@ class _FamilyConnectionCard extends ConsumerWidget {
         if (isGuardian) ...[
           const Divider(height: 2, color: AppColors.surface),
           ListTile(
-            leading: const Icon(Icons.add_home_work_outlined, color: AppColors.accent),
+            leading: const Icon(
+              Icons.add_home_work_outlined,
+              color: AppColors.accent,
+            ),
             title: const Text("Buat Keluarga Baru"),
             subtitle: const Text("Dapatkan kode unik"),
             trailing: const Icon(Icons.arrow_forward_ios, size: 14),
             onTap: () async {
               try {
-                await ref.read(profileControllerProvider.notifier).createFamily();
+                await ref
+                    .read(profileControllerProvider.notifier)
+                    .createFamily();
                 if (context.mounted) {
-                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Keluarga berhasil dibuat!")));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Keluarga berhasil dibuat!")),
+                  );
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Gagal: $e"), backgroundColor: AppColors.danger));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Gagal: $e"),
+                      backgroundColor: AppColors.danger,
+                    ),
+                  );
                 }
               }
             },
           ),
-        ]
+        ],
       ],
     );
   }
@@ -293,19 +411,34 @@ class _FamilyConnectionCard extends ConsumerWidget {
             TextField(
               controller: controller,
               textCapitalization: TextCapitalization.characters,
-              decoration: const InputDecoration(hintText: "Contoh: ABC1234", border: OutlineInputBorder()),
+              decoration: const InputDecoration(
+                hintText: "Contoh: ABC1234",
+                border: OutlineInputBorder(),
+              ),
             ),
             const SizedBox(height: 8),
-            const Text("Setelah memasukkan kode, tunggu Guardian menyetujui permintaan Anda.", style: TextStyle(fontSize: 12, color: Colors.grey)),
+            const Text(
+              "Setelah memasukkan kode, tunggu Guardian menyetujui permintaan Anda.",
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Batal")),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Batal"),
+          ),
           ElevatedButton(
             onPressed: () {
-              ref.read(profileControllerProvider.notifier).requestJoinFamily(controller.text);
+              ref
+                  .read(profileControllerProvider.notifier)
+                  .requestJoinFamily(controller.text);
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Permintaan dikirim. Tunggu persetujuan.")));
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text("Permintaan dikirim. Tunggu persetujuan."),
+                ),
+              );
             },
             child: const Text("Kirim Request"),
           ),
@@ -314,18 +447,38 @@ class _FamilyConnectionCard extends ConsumerWidget {
     );
   }
 
-  void _showKickDialog(BuildContext context, WidgetRef ref, UserProfile member) {
-    showDialog(context: context, builder: (ctx) => AlertDialog(
-      title: Text("Keluarkan ${member.name}?"),
-      content: const Text("Mereka tidak akan bisa lagi mengakses data keluarga."),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("Batal")),
-        TextButton(onPressed: () {
-          ref.read(profileControllerProvider.notifier).removeMember(member.id);
-          Navigator.pop(ctx);
-        }, child: const Text("Keluarkan", style: TextStyle(color: AppColors.danger))),
-      ],
-    ));
+  void _showKickDialog(
+    BuildContext context,
+    WidgetRef ref,
+    UserProfile member,
+  ) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("Keluarkan ${member.name}?"),
+        content: const Text(
+          "Mereka tidak akan bisa lagi mengakses data keluarga.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text("Batal"),
+          ),
+          TextButton(
+            onPressed: () {
+              ref
+                  .read(profileControllerProvider.notifier)
+                  .removeMember(member.id);
+              Navigator.pop(ctx);
+            },
+            child: const Text(
+              "Keluarkan",
+              style: TextStyle(color: AppColors.danger),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showLeaveDialog(BuildContext context, WidgetRef ref) {
@@ -366,7 +519,10 @@ class _FamilyConnectionCard extends ConsumerWidget {
                 }
               }
             },
-            child: const Text("Keluar", style: TextStyle(color: AppColors.danger)),
+            child: const Text(
+              "Keluar",
+              style: TextStyle(color: AppColors.danger),
+            ),
           ),
         ],
       ),
@@ -385,7 +541,13 @@ class _FeatureSettingsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: AppColors.shadow.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadow,
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
@@ -403,8 +565,11 @@ class _FeatureSettingsCard extends StatelessWidget {
   void _showFeatureDialog(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(16))),
-      builder: (ctx) => const ElderlySelectorSheet(), // <--- PANGGIL SHEET BARU DI SINI
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (ctx) =>
+          const ElderlySelectorSheet(), // <--- PANGGIL SHEET BARU DI SINI
     );
   }
 }
@@ -442,11 +607,11 @@ class _ProfileHeaderCard extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AppColors.primary,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.05),
-            blurRadius: 10,
+            color: AppColors.shadow,
+            blurRadius: 8,
             offset: const Offset(0, 4),
           ),
         ],
@@ -501,7 +666,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.surface.withValues(alpha: 0.32),
+                    color: AppColors.secondarySurface,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -509,7 +674,7 @@ class _ProfileHeaderCard extends StatelessWidget {
                         ? "Pendamping (Anak)"
                         : "Pengguna Utama",
                     style: const TextStyle(
-                      color: AppColors.surface,
+                      color: AppColors.textPrimary,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
                     ),
@@ -553,7 +718,7 @@ class _GeneralSettingsCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: AppColors.shadow.withValues(alpha: 0.05),
+            color: AppColors.shadow,
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
