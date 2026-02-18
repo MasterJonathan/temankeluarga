@@ -1,6 +1,6 @@
 # Teman Keluarga 🍂
 
-![Silver Guide Banner](assets/banner_placeholder.png)
+![Silver Guide Banner](screenshots/Banner.png)
 <!-- Ganti dengan banner aplikasi jika ada, atau hapus baris ini -->
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.0%2B-blue?logo=flutter)](https://flutter.dev)
@@ -57,9 +57,9 @@ Aplikasi ini dibangun menggunakan **Flutter** dengan arsitektur yang bersih dan 
 
 ## 📸 Tangkapan Layar
 
-| Halaman Sehat | Dashboard Guardian | AI Scrapbook | Tanya AI (Live) |
+| Halaman Sehat | Guardian Mode | Memories AI Scrapbook | Chat Room |
 |:---:|:---:|:---:|:---:|
-| <img src="docs/screenshots/health.png" width="200"> | <img src="docs/screenshots/dashboard.png" width="200"> | <img src="docs/screenshots/scrapbook.png" width="200"> | <img src="docs/screenshots/live.png" width="200"> |
+| <img src="screenshots/Health Page.png" width="200"> | <img src="screenshots/Guardian Mode.png" width="200"> | <img src="screenshots/memories Page.png" width="200"> | <img src="docs/screenshots/Chatroom.png" width="200"> |
 
 *(Ganti path gambar di atas dengan screenshot aplikasi Anda nanti)*
 

@@ -90,46 +90,46 @@ class AiAssistantCard extends ConsumerWidget {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              // const SizedBox(height: 24),
 
-              // Input & Send (Placeholder Visual dulu sesuai request)
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const TextField(
-                        decoration: InputDecoration(
-                          hintText: "Tanya sesuatu...",
-                          border: InputBorder.none,
-                          hintStyle: TextStyle(fontSize: 14),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: IconButton(
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Fitur teks akan segera hadir"),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.send, color: AppColors.surface),
-                    ),
-                  ),
-                ],
-              ),
+              // // Input & Send (Placeholder Visual dulu sesuai request)
+              // Row(
+              //   children: [
+              //     Expanded(
+              //       child: Container(
+              //         padding: const EdgeInsets.symmetric(horizontal: 16),
+              //         decoration: BoxDecoration(
+              //           color: AppColors.surface,
+              //           borderRadius: BorderRadius.circular(16),
+              //         ),
+              //         child: const TextField(
+              //           decoration: InputDecoration(
+              //             hintText: "Tanya sesuatu...",
+              //             border: InputBorder.none,
+              //             hintStyle: TextStyle(fontSize: 14),
+              //           ),
+              //         ),
+              //       ),
+              //     ),
+              //     const SizedBox(width: 8),
+              //     Container(
+              //       decoration: BoxDecoration(
+              //         color: AppColors.primary,
+              //         borderRadius: BorderRadius.circular(16),
+              //       ),
+              //       child: IconButton(
+              //         onPressed: () {
+              //           ScaffoldMessenger.of(context).showSnackBar(
+              //             const SnackBar(
+              //               content: Text("Fitur teks akan segera hadir"),
+              //             ),
+              //           );
+              //         },
+              //         icon: const Icon(Icons.send, color: AppColors.surface),
+              //       ),
+              //     ),
+              //   ],
+              // ),
             ],
           ),
         ),
