@@ -8,7 +8,7 @@
 [![Gemini AI](https://img.shields.io/badge/AI-Gemini-8E75B2?logo=google-bard)](https://ai.google.dev)
 [![License](https://img.shields.io/badge/License-GPLv3-red.svg)](LICENSE)
 
-**Silver Guide** adalah aplikasi pendamping keluarga premium yang dirancang khusus untuk mempererat hubungan antara Lansia (Orang Tua) dan Pendamping (Anak/Keluarga).
+**Teman keluarga** adalah aplikasi pendamping keluarga premium yang dirancang khusus untuk mempererat hubungan antara Lansia (Orang Tua) dan Pendamping (Anak/Keluarga).
 
 Dibangun dengan filosofi **"Luxury Accessibility"**, aplikasi ini menggabungkan desain bertema *Autumn* yang hangat, tipografi yang mudah dibaca, dan kecerdasan buatan (AI) untuk membantu manajemen kesehatan, kebahagiaan, dan kenangan keluarga.
 
