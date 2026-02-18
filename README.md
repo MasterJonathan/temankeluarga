@@ -57,9 +57,14 @@ Aplikasi ini dibangun menggunakan **Flutter** dengan arsitektur yang bersih dan 
 
 ## 📸 Tangkapan Layar
 
-| Halaman Sehat | Guardian Mode | Memories AI Scrapbook | Chat Room |
+| Halaman Sehat | Halaman Aktivitas | Memories AI Scrapbook | Chat Room |
 |:---:|:---:|:---:|:---:|
-| <img src="screenshots/Health Page.png" width="200"> | <img src="screenshots/Guardian Mode.png" width="200"> | <img src="screenshots/Memories.png" width="200"> | <img src="screenshots/Chatroom.png" width="200"> |
+| <img src="screenshots/Health Page.png" width="200"> | <img src="screenshots/Activity.png" width="200"> | <img src="screenshots/Memories.png" width="200"> | <img src="screenshots/Chatroom.png" width="200"> |
+
+
+| Guardian Mode | Gemini Live Audio | Gemini Chat Room |
+|:---:|:---:|:---:|
+| <img src="screenshots/Guardian Mode.png" width="200"> | <img src="screenshots/Geminni Audio.png" width="200"> | <img src="screenshots/Gemini Chat.png" width="200"> |
 
 ---
 
