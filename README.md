@@ -59,7 +59,7 @@ Aplikasi ini dibangun menggunakan **Flutter** dengan arsitektur yang bersih dan 
 
 | Halaman Sehat | Guardian Mode | Memories AI Scrapbook | Chat Room |
 |:---:|:---:|:---:|:---:|
-| <img src="screenshots/Health Page.png" width="200"> | <img src="screenshots/Guardian Mode.png" width="200"> | <img src="screenshots/memories Page.png" width="200"> | <img src="docs/screenshots/Chatroom.png" width="200"> |
+| <img src="screenshots/Health Page.png" width="200"> | <img src="screenshots/Guardian Mode.png" width="200"> | <img src="screenshots/Memories.png" width="200"> | <img src="screenshots/Chatroom.png" width="200"> |
 
 *(Ganti path gambar di atas dengan screenshot aplikasi Anda nanti)*
 
