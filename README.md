@@ -5,7 +5,7 @@
 
 [![Flutter](https://img.shields.io/badge/Flutter-3.0%2B-blue?logo=flutter)](https://flutter.dev)
 [![Firebase](https://img.shields.io/badge/Firebase-Core-orange?logo=firebase)](https://firebase.google.com)
-[![Gemini AI](https://img.shields.io/badge/AI-Gemini%20%26%20Live-8E75B2?logo=google-bard)](https://ai.google.dev)
+[![Gemini AI](https://img.shields.io/badge/AI-Gemini-8E75B2?logo=google-bard)](https://ai.google.dev)
 [![License](https://img.shields.io/badge/License-GPLv3-red.svg)](LICENSE)
 
 **Silver Guide** adalah aplikasi pendamping keluarga premium yang dirancang khusus untuk mempererat hubungan antara Lansia (Orang Tua) dan Pendamping (Anak/Keluarga).
