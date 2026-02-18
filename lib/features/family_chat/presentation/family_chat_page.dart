@@ -465,9 +465,7 @@ class _ChatBubble extends StatelessWidget {
                       message.contextData!,
                       style: TextStyle(
                         fontSize: 10,
-                        color: isMe
-                            ? AppColors.surface
-                            : AppColors.textSecondary,
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ],

@@ -157,7 +157,7 @@ class MemoryActions {
       // 3. SIAPKAN MODEL (Nano Banana Pro)
       // Menggunakan gemini-3-pro-image-preview sesuai request
       final model =  FirebaseAI.googleAI().generativeModel(
-        model: 'gemini-3-pro-image-preview', 
+        model: 'gemini-2.5-flash-image', 
         generationConfig: GenerationConfig(
           responseModalities: [ResponseModalities.image], // Output hanya gambar
           // Aspect Ratio diatur lewat prompt jika config belum support di SDK versi ini
