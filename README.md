@@ -64,7 +64,7 @@ Aplikasi ini dibangun menggunakan **Flutter** dengan arsitektur yang bersih dan 
 
 | Guardian Mode | Gemini Live Audio | Gemini Chat Room |
 |:---:|:---:|:---:|
-| <img src="screenshots/Guardian Mode.png" width="200"> | <img src="screenshots/Geminni Audio.png" width="200"> | <img src="screenshots/Gemini Chat.png" width="200"> |
+| <img src="screenshots/Guardian Mode.png" width="200"> | <img src="screenshots/Gemini Audio.png" width="200"> | <img src="screenshots/Gemini Chat.png" width="200"> |
 
 ---
 
