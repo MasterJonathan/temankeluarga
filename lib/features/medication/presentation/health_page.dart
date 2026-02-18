@@ -322,18 +322,12 @@ class _DetailTimelineView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Provider untuk data obat detail (sudah handle logic tanggal di dalam medication_provider.dart)
     final asyncMedications = ref.watch(medicationProvider(activeProfileId));
     final selectedDate = ref.watch(selectedDateProvider);
 
     return CustomScrollView(
       slivers: [
-        const SliverToBoxAdapter(
-          child: Padding(
-            padding: EdgeInsets.only(bottom: 24.0),
-            child: AiAssistantCard(),
-          ),
-        ),
+        // 1. Header Area (Salam, Quote, AI, Kalender)
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           sliver: SliverToBoxAdapter(
@@ -342,38 +336,33 @@ class _DetailTimelineView extends ConsumerWidget {
               children: [
                 if (isGuardianMode)
                   Padding(
-                    padding: const EdgeInsets.only(top: 16),
+                    padding: const EdgeInsets.only(top: 16, bottom: 8),
                     child: GestureDetector(
-                      onTap: () =>
-                          ref.read(viewedElderlyIdProvider.notifier).state =
-                              null,
+                      onTap: () => ref.read(viewedElderlyIdProvider.notifier).state = null,
                       child: Row(
                         children: [
-                          const Icon(
-                            Icons.arrow_back_ios_new,
-                            size: 18,
-                            color: AppColors.primary,
-                          ),
+                          const Icon(Icons.arrow_back_ios_new, size: 18, color: AppColors.primary),
                           const SizedBox(width: 8),
                           Text(
                             "Kembali ke Ringkasan",
-                            style: AppTheme.lightTheme.textTheme.bodyLarge
-                                ?.copyWith(
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            style: AppTheme.lightTheme.textTheme.bodyLarge?.copyWith(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
                     ),
                   ),
 
-                _buildDateStrip(context, ref, selectedDate, userName),
+                // Panggil Widget Header yang sudah diupdate
+                _buildHeaderContent(context, ref, selectedDate, userName),
               ],
             ),
           ),
         ),
 
+        // 2. List Obat
         asyncMedications.when(
           data: (tasks) {
             if (tasks.isEmpty) {
@@ -403,11 +392,8 @@ class _DetailTimelineView extends ConsumerWidget {
               ),
             );
           },
-          loading: () => const SliverFillRemaining(
-            child: Center(child: CircularProgressIndicator()),
-          ),
-          error: (e, _) =>
-              SliverFillRemaining(child: Center(child: Text("Error: $e"))),
+          loading: () => const SliverFillRemaining(child: Center(child: CircularProgressIndicator())),
+          error: (e, _) => SliverFillRemaining(child: Center(child: Text("Error: $e"))),
         ),
 
         const SliverToBoxAdapter(child: SizedBox(height: 200)),
@@ -415,24 +401,20 @@ class _DetailTimelineView extends ConsumerWidget {
     );
   }
 
-  // Widget Date Strip yang Dinamis
-  Widget _buildDateStrip(
+  // --- WIDGET HEADER (SALAM, QUOTE, AI, DATE STRIP) ---
+  Widget _buildHeaderContent(
     BuildContext context,
     WidgetRef ref,
     DateTime selectedDate,
     String name,
   ) {
-    // Generate 5 hari (Hari ini + 4 hari ke belakang)
+    // Generate 5 hari (Hari ini di tengah)
     final today = DateTime.now();
     final List<DateTime> dates = List.generate(5, (index) {
       return today.add(Duration(days: index - 2));
     });
 
-    // Format Tanggal Header (misal: "Senin, 24 Oktober 2023")
-    final String formattedHeaderDate = DateFormat(
-      'EEEE, d MMMM yyyy',
-      'id_ID',
-    ).format(selectedDate);
+    final String formattedHeaderDate = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(selectedDate);
 
     final int hour = DateTime.now().hour;
     String greeting;
@@ -449,7 +431,8 @@ class _DetailTimelineView extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 1. Greeting & Tanggal (Outside)
+        const SizedBox(height: 24),
+        // 1. Salam & Tanggal
         Text(
           "$greeting, $name",
           style: AppTheme.lightTheme.textTheme.displayMedium?.copyWith(
@@ -470,11 +453,11 @@ class _DetailTimelineView extends ConsumerWidget {
 
         const SizedBox(height: 24),
 
-        // 2. Banner Quote (Accent Background)
+        // 2. Banner Quote
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: AppColors.accent.withValues(alpha: 0.56), // Subtle accent
+            color: AppColors.accent.withValues(alpha: 0.56),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
@@ -482,7 +465,7 @@ class _DetailTimelineView extends ConsumerWidget {
             children: [
               Expanded(
                 child: Container(
-                  height: 130, // Tinggi tetap untuk centering quote
+                  height: 130,
                   padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -501,7 +484,6 @@ class _DetailTimelineView extends ConsumerWidget {
                   ),
                 ),
               ),
-              // Gambar mepet bawah (Zero padding bottom)
               Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: Image.asset(
@@ -514,9 +496,16 @@ class _DetailTimelineView extends ConsumerWidget {
           ),
         ),
 
+        const SizedBox(height: 24),
+
+        // 3. WIDGET TANYA AI (DISINI POSISINYA)
+        // Saya hapus margin horizontal di dalam widget AI agar pas dengan layout ini
+        // atau kita bungkus agar rapi
+        // const AiAssistantCard(),
+
         const SizedBox(height: 32),
 
-        // 2. Row Kalender
+        // 4. Date Strip (Kalender)
         Center(
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -526,41 +515,24 @@ class _DetailTimelineView extends ConsumerWidget {
                 final isToday = DateUtils.isSameDay(date, today);
 
                 final dayNum = date.day.toString();
-                final dayName = DateFormat(
-                  'E',
-                  'id_ID',
-                ).format(date); // Sen, Sel, Rab, Kam
+                final dayName = DateFormat('E', 'id_ID').format(date);
 
                 return GestureDetector(
                   onTap: () {
-                    // Update state tanggal -> Provider otomatis refresh data
                     ref.read(selectedDateProvider.notifier).state = date;
                   },
                   child: Container(
                     margin: const EdgeInsets.only(right: 16),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 16,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.primary
-                          : Colors.transparent,
+                      color: isSelected ? AppColors.primary : Colors.transparent,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: isSelected
-                            ? AppColors.primary
-                            : AppColors.textSecondary.withValues(alpha: 0.3),
+                        color: isSelected ? AppColors.primary : AppColors.textSecondary.withValues(alpha: 0.3),
                       ),
-                      boxShadow: isSelected
-                          ? [
-                              BoxShadow(
-                                color: AppColors.primary.withValues(alpha: 0.3),
-                                blurRadius: 8,
-                                offset: const Offset(0, 4),
-                              ),
-                            ]
-                          : [],
+                      boxShadow: isSelected ? [
+                        BoxShadow(color: AppColors.primary.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 4))
+                      ] : [],
                     ),
                     child: Column(
                       children: [
@@ -569,18 +541,14 @@ class _DetailTimelineView extends ConsumerWidget {
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: isSelected
-                                ? AppColors.surface
-                                : AppColors.textPrimary,
+                            color: isSelected ? AppColors.surface : AppColors.textPrimary,
                           ),
                         ),
                         Text(
                           isToday ? "Hari Ini" : dayName,
                           style: TextStyle(
                             fontSize: 12,
-                            color: isSelected
-                                ? AppColors.surface
-                                : AppColors.textSecondary,
+                            color: isSelected ? AppColors.surface : AppColors.textSecondary,
                           ),
                         ),
                       ],

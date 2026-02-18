@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:teman_keluarga/app/theme/app_theme.dart';
+import 'package:teman_keluarga/features/family_chat/presentation/ai_assistant_page.dart';
 import 'package:teman_keluarga/features/profile/presentation/profile_controller.dart';
 import 'package:teman_keluarga/widgets/fullscreen_image_viewer.dart';
 import 'chat_provider.dart';
@@ -86,6 +87,7 @@ class _TopicSelector extends ConsumerWidget {
             _TopicCard(
               icon: Icons.medication,
               color: AppColors.primary,
+              bgColor: AppColors.surface, 
               title: "Lapor Minum Obat",
               subtitle: "Kabari kalau sudah minum obat.",
               onTap: () => _enterChat(
@@ -99,6 +101,7 @@ class _TopicSelector extends ConsumerWidget {
             _TopicCard(
               icon: Icons.photo_album,
               color: AppColors.accent,
+              bgColor: AppColors.surface, 
               title: "Bahas Cerita",
               subtitle: "Ngobrolin foto atau kenangan.",
               onTap: () => _enterChat(
@@ -112,9 +115,29 @@ class _TopicSelector extends ConsumerWidget {
             _TopicCard(
               icon: Icons.coffee,
               color: AppColors.secondary,
+              bgColor: AppColors.surface,
               title: "Masuk Ruang Keluarga",
               subtitle: "Luangkan waktu bersama keluarga.",
               onTap: () => _enterChat(ref, null, ChatContextType.general, null),
+            ),
+
+            const SizedBox(height: 16),
+
+            _TopicCard(
+              icon: Icons.psychology, // Icon Otak/AI
+              color: AppColors.surface,
+              bgColor: AppColors.secondary, 
+              title: "Teman AI",
+              subtitle: "Ngobrol atau tanya sesuatu ke AI.",
+              onTap: () {
+                // Navigasi ke Halaman Baru
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AiAssistantPage(),
+                  ),
+                );
+              },
             ),
           ],
         ),
@@ -147,12 +170,14 @@ class _TopicSelector extends ConsumerWidget {
 class _TopicCard extends StatelessWidget {
   final IconData icon;
   final Color color;
+  final Color bgColor;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
   const _TopicCard({
     required this.icon,
     required this.color,
+    required this.bgColor,
     required this.title,
     required this.subtitle,
     required this.onTap,
@@ -162,7 +187,7 @@ class _TopicCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: bgColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -455,11 +480,7 @@ class _ChatBubble extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.link,
-                      size: 12,
-                      color: AppColors.textPrimary,
-                    ),
+                    Icon(Icons.link, size: 12, color: AppColors.textPrimary),
                     const SizedBox(width: 4),
                     Text(
                       message.contextData!,
@@ -477,12 +498,12 @@ class _ChatBubble extends StatelessWidget {
               GestureDetector(
                 onTap: () {
                   Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        FullScreenImageViewer(imageUrl: message.content),
-                  ),
-                );
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          FullScreenImageViewer(imageUrl: message.content),
+                    ),
+                  );
                 },
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(4),
