@@ -32,33 +32,64 @@ class MainNavigationScaffold extends ConsumerWidget {
     final asyncUser = ref.watch(profileControllerProvider);
     final activeProfileId = ref.watch(activeProfileIdProvider);
 
-
-    
     // Kita cek nanti di logic build
 
     return asyncUser.when(
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (e, _) => Scaffold(body: Center(child: Text("Error: $e"))),
       data: (user) {
         // 1. DEFINISI FITUR
         final allFeatures = [
-          _NavItem(id: 'health', title: "Jadwal Kesehatan", icon: Icons.medication_outlined, selectedIcon: Icons.medication, label: 'Sehat', page: const HealthPage()),
-          _NavItem(id: 'activity', title: "Aktivitas Hari Ini", icon: Icons.local_florist_outlined, selectedIcon: Icons.local_florist, label: 'Aktivitas', page: const ActivitiesPage()),
-          _NavItem(id: 'memory', title: "Kenangan Kita", icon: Icons.photo_library_outlined, selectedIcon: Icons.photo_library, label: 'Kenangan', page: const MemoriesPage()),
-          _NavItem(id: 'chat', title: "Ruang Keluarga", icon: Icons.forum_outlined, selectedIcon: Icons.forum, label: 'Obrolan', page: const FamilyChatPage()),
+          _NavItem(
+            id: 'health',
+            title: "Jadwal Kesehatan",
+            icon: Icons.medication_outlined,
+            selectedIcon: Icons.medication,
+            label: 'Sehat',
+            page: const HealthPage(),
+          ),
+          _NavItem(
+            id: 'activity',
+            title: "Aktivitas Hari Ini",
+            icon: Icons.local_florist_outlined,
+            selectedIcon: Icons.local_florist,
+            label: 'Aktivitas',
+            page: const ActivitiesPage(),
+          ),
+          _NavItem(
+            id: 'memory',
+            title: "Kenangan Kita",
+            icon: Icons.photo_library_outlined,
+            selectedIcon: Icons.photo_library,
+            label: 'Kenangan',
+            page: const MemoriesPage(),
+          ),
+          _NavItem(
+            id: 'chat',
+            title: "Ruang Keluarga",
+            icon: Icons.forum_outlined,
+            selectedIcon: Icons.forum,
+            label: 'Obrolan',
+            page: const FamilyChatPage(),
+          ),
         ];
 
         // 2. FILTER FITUR
-        final enabledKeys = user.enabledFeatures.isEmpty 
-            ? ['health', 'activity', 'memory', 'chat'] 
+        final enabledKeys = user.enabledFeatures.isEmpty
+            ? ['health', 'activity', 'memory', 'chat']
             : user.enabledFeatures;
 
         final visibleItems = allFeatures
             .where((item) => enabledKeys.contains(item.id))
             .toList();
 
-        final safeIndex = currentIndex >= visibleItems.length ? 0 : currentIndex;
-        final activeItem = visibleItems.isNotEmpty ? visibleItems[safeIndex] : null;
+        final safeIndex = currentIndex >= visibleItems.length
+            ? 0
+            : currentIndex;
+        final activeItem = visibleItems.isNotEmpty
+            ? visibleItems[safeIndex]
+            : null;
 
         // LOGIC KHUSUS CHAT PAGE
         // Jika sedang di halaman Chat, kita sembunyikan FAB SOS & BottomBar
@@ -68,14 +99,19 @@ class MainNavigationScaffold extends ConsumerWidget {
         return Scaffold(
           extendBody: true,
           // ResizeToAvoidBottomInset: true penting agar keyboard mendorong body ke atas
-          resizeToAvoidBottomInset: true, 
-          
+          resizeToAvoidBottomInset: true,
+
           appBar: AppBar(
             title: Text(activeItem?.title ?? "Silver Guide"),
             actions: [
               GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const SettingsPage(),
+                    ),
+                  );
                 },
                 child: Padding(
                   padding: const EdgeInsets.only(right: 16, left: 8),
@@ -84,7 +120,9 @@ class MainNavigationScaffold extends ConsumerWidget {
                     backgroundColor: AppColors.secondarySurface,
                     backgroundImage: user.photoUrl.isNotEmpty
                         ? NetworkImage(user.photoUrl)
-                        : const NetworkImage("https://cdn-icons-png.flaticon.com/256/149/149071.png"),
+                        : const NetworkImage(
+                            "https://cdn-icons-png.flaticon.com/256/149/149071.png",
+                          ),
                   ),
                 ),
               ),
@@ -94,7 +132,7 @@ class MainNavigationScaffold extends ConsumerWidget {
           // BODY
           body: Stack(
             children: [
-              visibleItems.isEmpty 
+              visibleItems.isEmpty
                   ? const Center(child: Text("Tidak ada fitur yang aktif."))
                   : IndexedStack(
                       index: safeIndex,
@@ -105,32 +143,44 @@ class MainNavigationScaffold extends ConsumerWidget {
               // Sembunyikan jika di Chat Page (karena chat punya input sendiri)
               if (!isChatPage)
                 Positioned(
-                  bottom: 136, 
+                  bottom: 136,
                   right: 16,
-                  child: _buildPageActionFab(context, user, activeItem?.id, activeProfileId),
+                  child: _buildPageActionFab(
+                    context,
+                    user,
+                    activeItem?.id,
+                    activeProfileId,
+                  ),
                 ),
             ],
           ),
 
           // TOMBOL SOS (Hanya muncul jika BUKAN Chat Page)
-          floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-          floatingActionButton: isChatPage ? null : SizedBox(
-            width: 64, height: 64,
-            child: FloatingActionButton(
-              heroTag: "fab_sos_main",
-              elevation: 4,
-              backgroundColor: AppColors.danger,
-              shape: const CircleBorder(),
-              onPressed: () => _showSosCountdown(context, ref, user),
-              child: const Icon(Icons.sos, size: 28, color: AppColors.surface),
-            ),
-          ),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerDocked,
+          floatingActionButton: isChatPage
+              ? null
+              : SizedBox(
+                  width: 64,
+                  height: 64,
+                  child: FloatingActionButton(
+                    heroTag: "fab_sos_main",
+                    elevation: 4,
+                    backgroundColor: AppColors.danger,
+                    shape: const CircleBorder(),
+                    onPressed: () => _showSosCountdown(context, ref, user),
+                    child: const Icon(
+                      Icons.sos,
+                      size: 28,
+                      color: AppColors.surface,
+                    ),
+                  ),
+                ),
 
-
-          
           // Solusi Praktis: Di Halaman Chat, SOS hilang. Lubang tetap ada (estetika).
           bottomNavigationBar: BottomAppBar(
-            shape: const CircularNotchedRectangle(),
+            // Jika Chat Page, hilangkan Notch (lubang)
+            shape: isChatPage ? null : const CircularNotchedRectangle(),
             notchMargin: 8.0,
             color: AppColors.surface,
             surfaceTintColor: AppColors.primary,
@@ -138,24 +188,78 @@ class MainNavigationScaffold extends ConsumerWidget {
             height: 80,
             padding: EdgeInsets.zero,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween, // Tetap SpaceBetween
               children: [
+                // KIRI
                 Expanded(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildFixedSlot(context, ref, allFeatures, visibleItems, 'health', safeIndex),
-                      _buildFixedSlot(context, ref, allFeatures, visibleItems, 'activity', safeIndex),
+                      _buildFixedSlot(
+                        context,
+                        ref,
+                        allFeatures,
+                        visibleItems,
+                        'health',
+                        safeIndex,
+                      ),
+                      _buildFixedSlot(
+                        context,
+                        ref,
+                        allFeatures,
+                        visibleItems,
+                        'activity',
+                        safeIndex,
+                      ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 80),
+
+                // TENGAH (SOS)
+                if (isChatPage)
+                  // JIKA CHAT: Tampilkan Tombol SOS "Datar" di sini
+                  Container(
+                    width: 80,
+                    alignment: Alignment.center,
+                    child: IconButton(
+                      onPressed: () => _showSosCountdown(context, ref, user),
+                      icon: const Icon(
+                        Icons.sos,
+                        size: 32,
+                        color: AppColors.surface,
+                      ),
+                      style: IconButton.styleFrom(
+                        backgroundColor: AppColors.danger,// Background tipis biar beda
+                        padding: const EdgeInsets.all(12),
+                      ),
+                    ),
+                  )
+                else
+                  // JIKA BUKAN CHAT: Biarkan Kosong (untuk tempat FAB Ngambang)
+                  const SizedBox(width: 80),
+
+                // KANAN
                 Expanded(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _buildFixedSlot(context, ref, allFeatures, visibleItems, 'memory', safeIndex),
-                      _buildFixedSlot(context, ref, allFeatures, visibleItems, 'chat', safeIndex),
+                      _buildFixedSlot(
+                        context,
+                        ref,
+                        allFeatures,
+                        visibleItems,
+                        'memory',
+                        safeIndex,
+                      ),
+                      _buildFixedSlot(
+                        context,
+                        ref,
+                        allFeatures,
+                        visibleItems,
+                        'chat',
+                        safeIndex,
+                      ),
                     ],
                   ),
                 ),
@@ -289,9 +393,13 @@ class MainNavigationScaffold extends ConsumerWidget {
     return const SizedBox.shrink();
   }
 
-  void _showSosCountdown(BuildContext context, WidgetRef ref, UserProfile user) { 
+  void _showSosCountdown(
+    BuildContext context,
+    WidgetRef ref,
+    UserProfile user,
+  ) {
     // Note: Tambahkan parameter ref dan user
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("Sinyal Darurat Terkirim!"),
@@ -302,13 +410,15 @@ class MainNavigationScaffold extends ConsumerWidget {
 
     // --- LOGIC CHAT SOS ---
     if (user.familyId != null && user.familyId!.isNotEmpty) {
-      ref.read(chatActionsProvider).sendSystemMessage(
-        familyId: user.familyId!,
-        senderId: user.id,
-        senderName: user.name,
-        text: "🚨 MENEKAN TOMBOL SOS! BUTUH BANTUAN!",
-        contextType: ChatContextType.general,
-      );
+      ref
+          .read(chatActionsProvider)
+          .sendSystemMessage(
+            familyId: user.familyId!,
+            senderId: user.id,
+            senderName: user.name,
+            text: "🚨 MENEKAN TOMBOL SOS! BUTUH BANTUAN!",
+            contextType: ChatContextType.general,
+          );
     }
   }
 }
